@@ -1,26 +1,29 @@
 package com.meietiim.pvlaevadepommitamine;
 
+import static com.meietiim.pvlaevadepommitamine;
+
 public class BackEnd {
     public void update() {
         switch (FrontEnd.MAIN.action) {
-            case 1; // 1 - Player placed a ship
-                //Store placed ship in playerShip
+            case ACTION_PLACE_SHIP; // Player placed a ship
+                // Store placed ship in playerShip
+
                 for(int x = playerPlaceShipX; x < playerPlaceShipX+playerPlaceShipW -1; x++) {
                     for(int y = playerPlaceShipY; y < playerPlaceShipY+playerPlaceShipH -1; y++) {
                         if(x > 0 && y > 0 && x < 10 && y < 10) playerShips[x][y] = true;
-                        else FrontEnd.MAIN.error = 2;
+                        else FrontEnd.MAIN.ERROR_UNKNOWN = 2;
                     }
                 }
                 break;
-            case 2; // 2 - Player placed a bomb
+            case ACTION_PLACE_BOMB; // Player placed a bomb
                 if ()
                 break;
-            case 3; // 3 - Computer's turn
+            case ACTION_PLACE_COMPUTER; // Computer's turn
 
                 break;
             default:
-                FrontEnd.MAIN.error = 1;
-        }
+                FrontEnd.MAIN.error = ERROR_UNKNOWN;
+            }
         }
     }
 }
