@@ -39,7 +39,7 @@ public class FrontEnd extends GameContainer {
     public int action; // 0 - Player placed a ship
                        // 1 - Player placed a bomb
                        // 2 - Computer's turn
-    public int error;  // 0 - Wrong ship placement
+    public int error;  // 0 - TODOOOOO
     
     // ### INPUT ###
     public int mouseSlotX, mouseSlotY;
