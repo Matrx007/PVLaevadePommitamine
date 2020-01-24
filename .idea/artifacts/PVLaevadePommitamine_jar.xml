@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PVLaevadePommitamine:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/PVLaevadePommitamine_jar</output-path>
+    <root id="archive" name="PVLaevadePommitamine.jar">
+      <element id="module-output" name="PVLaevadePommitamine" />
+    </root>
+  </artifact>
+</component>
