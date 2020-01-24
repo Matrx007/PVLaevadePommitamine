@@ -109,12 +109,12 @@ public class FrontEnd extends GameContainer {
             mouseSlotX = (int)((game.mouseX - boardOffsetX) / (boardTileW + boardTileGap));
             mouseSlotY = (int)((game.mouseY - boardOffsetY) / (boardTileH + boardTileGap));
         }
-    
+        
         if(game.input.isButtonDown(PConstants.LEFT) && nextShipID < 5) {
             action = 0;
             playerPlaceShipX = mouseSlotX;
             playerPlaceShipY = mouseSlotY;
-        
+            
             int dimension = SHIPS[nextShipID];
             if(shipOrientation) {
                 playerPlaceShipW = dimension;
@@ -123,7 +123,7 @@ public class FrontEnd extends GameContainer {
                 playerPlaceShipW = 1;
                 playerPlaceShipH = dimension;
             }
-    
+            
             boolean shipInsideBounds = false;
             if(playerPlaceShipX >= 0 && playerPlaceShipY >= 0 &&
                     playerPlaceShipX+playerPlaceShipW-1 < 10 &&
@@ -150,7 +150,7 @@ public class FrontEnd extends GameContainer {
                     }
                 }
             }
-        
+            
             backEnd.update();
         }
     }
