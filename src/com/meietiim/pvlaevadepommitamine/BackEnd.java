@@ -26,7 +26,7 @@ public class BackEnd {
                     for (int x = playerPlaceShipX; x < playerPlaceShipX + playerPlaceShipW - 1; x++) {
                         for (int y = playerPlaceShipY; y < playerPlaceShipY + playerPlaceShipH - 1; y++) {
                             if (x > 0 && y > 0 && x < 10 && y < 10)
-                                playerShips[x][y] = true;
+                                MAIN.playerShips[x][y] = true;
                             // TODO: IDK
                             else MAIN.error = ERROR_UNKNOWN;
                         }
@@ -36,7 +36,7 @@ public class BackEnd {
                 }
                 break;
             case ACTION_PLACE_BOMB: // Player placed a bomb
-                if ()
+                //if ()
                     break;
             case ACTION_PLACE_COMPUTER: // Computer's turn
 
@@ -45,5 +45,4 @@ public class BackEnd {
                 MAIN.error = ERROR_UNKNOWN;
         }
     }
-}
 }
