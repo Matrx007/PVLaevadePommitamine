@@ -71,6 +71,7 @@ public class FrontEnd extends GameContainer {
     
     public final static int RESPONSE_EMPTY = 1;
     public final static int RESPONSE_HIT = 2;
+    public final static int RESPONSE_DEAD = 3;
     
     public int response; // Use RESPONSE_... constants
     
@@ -124,14 +125,34 @@ public class FrontEnd extends GameContainer {
                 playerPlaceShipH = dimension;
             }
             
-            boolean shipInsideBounds = false;
+            // Check if the ship is out of bound
+            boolean correctPlacement = false;
             if(playerPlaceShipX >= 0 && playerPlaceShipY >= 0 &&
                     playerPlaceShipX+playerPlaceShipW-1 < 10 &&
                     playerPlaceShipY+playerPlaceShipH-1 < 10) {
-                shipInsideBounds = true;
+                correctPlacement = true;
             }
             
-            if(shipInsideBounds) {
+            // Check if the ship overlaps with any other ship
+            for(int i = 0; i < playerShipData.length; i++) {
+                // Skip if ship doesn't exist
+                if(playerShipData[i][3] == 0) continue;
+                
+                // Check collision
+                if(overlap(playerPlaceShipX-1,
+                        playerPlaceShipY-1,
+                        playerPlaceShipX+playerPlaceShipW,
+                        playerPlaceBombY+playerPlaceShipH,
+                        playerShipData[i][0]-1,
+                        playerShipData[i][1]-1,
+                        playerShipData[i][0]+playerShipData[i][2],
+                        playerShipData[i][1]+playerShipData[i][3])) {
+                    correctPlacement = false;
+                    break;
+                }
+            }
+            
+            if(correctPlacement) {
                 playerShipData[nextShipID] = new int[]{
                         playerPlaceShipX,
                         playerPlaceShipY,
@@ -206,7 +227,14 @@ public class FrontEnd extends GameContainer {
         
     }
     
-    
+    public boolean overlap(int oneLX, int oneLY, int oneRX, int oneRY,
+                    int twoLX, int twoLY, int twoRX, int twoRY) {
+        if(oneLX > twoRX || twoLX > oneRX) {
+            return false;
+        }
+        
+        return oneLY >= twoRY && twoLY >= oneRY;
+    }
     
     
     
