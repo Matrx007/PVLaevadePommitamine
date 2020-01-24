@@ -33,13 +33,20 @@ public class FrontEnd extends GameContainer {
     public boolean[][] computerBombs = new boolean[10][10];
     
     // Placing a ship
-    public int playerPlaceShipX, playerPlaceShipY, playerPlaceShipW, playerPlaceShipH;
+    public int playerPlaceShipX, playerPlaceShipY, playerPlaceShipW, playerPlaceShipH, playerPlaceShipS;
     
     // Game state
-    public int action; // 0 - Player placed a ship
-                       // 1 - Player placed a bomb
-                       // 2 - Computer's turn
-    public int error;  // 0 - TODOOOOO
+    public final static int ACTION_PLACE_SHIP = 1;
+    public final static int ACTION_PLACE_BOMB = 2;
+    public final static int ACTION_PLACE_COMPUTER = 3;
+    
+    public int action; // Use ACTION_... constants
+    
+    public final static int ERROR_UNKNOWN = 1;
+    public final static int ERROR_INCORRECT_PLACEMENT = 2;
+    public final static int ERROR_OUT_OF_SHIPS = 3;
+    
+    public int error; // Use ERROR_... constants
     
     // ### INPUT ###
     public int mouseSlotX, mouseSlotY;
@@ -80,29 +87,6 @@ public class FrontEnd extends GameContainer {
     public void updateTick() {
         mouseSlotX = (int)((game.mouseX - boardOffsetX) / (boardTileW + boardTileGap));
         mouseSlotY = (int)((game.mouseY - boardOffsetY) / (boardTileH + boardTileGap));
-        
-        if(game.input.isButtonDown(PConstants.LEFT)) {
-            action = 0;
-            playerPlaceShipX = mouseSlotX;
-            playerPlaceShipY = mouseSlotY;
-            
-            int dimension = random.nextInt(3)+1;
-            if(random.nextBoolean()) {
-                playerPlaceShipW = dimension;
-                playerPlaceShipH = 1;
-            } else {
-                playerPlaceShipW = 1;
-                playerPlaceShipH = dimension;
-            }
-    
-            for(int i = playerPlaceShipX; i < playerPlaceShipX+playerPlaceShipW; i++) {
-                for(int j = playerPlaceShipY; j < playerPlaceShipY+playerPlaceShipH; j++) {
-                    if(i > 0 && j > 0 && i < 10 && j < 10) playerShips[i][j] = true;
-                }
-            }
-            
-            backEnd.update();
-        }
     }
     
     @Override
@@ -163,4 +147,31 @@ public class FrontEnd extends GameContainer {
         // Start our game
         Game.createGame(1280, 720, MAIN, 60f, RENDERER);
     }
+    
+    /*
+    *
+    * if(game.input.isButtonDown(PConstants.LEFT)) {
+            action = 0;
+            playerPlaceShipX = mouseSlotX;
+            playerPlaceShipY = mouseSlotY;
+            
+            int dimension = random.nextInt(3)+1;
+            if(random.nextBoolean()) {
+                playerPlaceShipW = dimension;
+                playerPlaceShipH = 1;
+            } else {
+                playerPlaceShipW = 1;
+                playerPlaceShipH = dimension;
+            }
+    
+            for(int i = playerPlaceShipX; i < playerPlaceShipX+playerPlaceShipW; i++) {
+                for(int j = playerPlaceShipY; j < playerPlaceShipY+playerPlaceShipH; j++) {
+                    if(i > 0 && j > 0 && i < 10 && j < 10) playerShips[i][j] = true;
+                }
+            }
+            
+            backEnd.update();
+        }
+    *
+    * */
 }
