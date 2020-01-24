@@ -34,6 +34,7 @@ public class FrontEnd extends GameContainer {
     
     // Placing a ship
     public int playerPlaceShipX, playerPlaceShipY, playerPlaceShipW, playerPlaceShipH, playerPlaceShipS;
+    public int playerPlaceBombX, playerPlaceBombY;
     
     // Game state
     public final static int ACTION_PLACE_SHIP = 1;
