@@ -1,1 +1,4 @@
-666
+public void print(boolean[][] shipArray) {
+    System.println.out();
+    for(int i = 0;)
+}

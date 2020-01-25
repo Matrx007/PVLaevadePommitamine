@@ -128,6 +128,15 @@ public class FrontEnd extends GameContainer {
         if(game.input.isKeyDown('R')) {
             shipOrientation = !shipOrientation;
         }
+        
+        // DEBUG ONLY generates enemy ships
+        if(game.input.isKeyDown('T')) {
+            computerShips = new boolean[10][10];
+            
+            action = ACTION_PLACE_COMPUTER;
+            backEnd.update();
+            System.out.println("Done");
+        }
     
         // Show if placing ship there is legal
         collision = true;
@@ -143,51 +152,55 @@ public class FrontEnd extends GameContainer {
     
     
         // DEBUGGING ONLY, Place ships if any left
-        if(game.input.isButtonDown(PConstants.LEFT) && nextShipID < 5) {
-            action = 0;
-            playerPlaceShipX = mouseSlotX;
-            playerPlaceShipY = mouseSlotY;
+        if(game.input.isButtonDown(PConstants.LEFT) && nextShipID < 5 && false) {
+            
+            // Place a ship
+            if(isSpaceFree(mouseSlotX, mouseSlotY, 1, 1, playerShips)) {
+                action = 0;
+                playerPlaceShipX = mouseSlotX;
+                playerPlaceShipY = mouseSlotY;
     
-            int dimension = SHIPS[nextShipID];
-            if (shipOrientation) {
-                playerPlaceShipW = dimension;
-                playerPlaceShipH = 1;
-            } else {
-                playerPlaceShipW = 1;
-                playerPlaceShipH = dimension;
-            }
+                int dimension = SHIPS[nextShipID];
+                if (shipOrientation) {
+                    playerPlaceShipW = dimension;
+                    playerPlaceShipH = 1;
+                } else {
+                    playerPlaceShipW = 1;
+                    playerPlaceShipH = dimension;
+                }
     
-            // Check if the ship is out of bound
-            boolean correctPlacement = isSpaceFree(
-                    playerPlaceShipX,
-                    playerPlaceShipY,
-                    playerPlaceShipW,
-                    playerPlaceShipH,
-                    playerShips
-            );
-    
-    
-            if (correctPlacement) {
-                playerShipData[nextShipID] = new int[]{
+                // Check if the ship is out of bound
+                boolean correctPlacement = isSpaceFree(
                         playerPlaceShipX,
                         playerPlaceShipY,
                         playerPlaceShipW,
                         playerPlaceShipH,
-                        0,
-                        0
-                };
-                nextShipID++;
+                        playerShips
+                );
+    
+    
+                if (correctPlacement) {
+                    playerShipData[nextShipID] = new int[]{
+                            playerPlaceShipX,
+                            playerPlaceShipY,
+                            playerPlaceShipW,
+                            playerPlaceShipH,
+                            0,
+                            0
+                    };
+                    nextShipID++;
         
-                for (int i = playerPlaceShipX; i < playerPlaceShipX + playerPlaceShipW; i++) {
-                    for (int j = playerPlaceShipY; j < playerPlaceShipY + playerPlaceShipH; j++) {
-                        if (i >= 0 && j >= 0 && i < 10 && j < 10) {
-                            playerShips[i][j] = true;
+                    for (int i = playerPlaceShipX; i < playerPlaceShipX + playerPlaceShipW; i++) {
+                        for (int j = playerPlaceShipY; j < playerPlaceShipY + playerPlaceShipH; j++) {
+                            if (i >= 0 && j >= 0 && i < 10 && j < 10) {
+                                playerShips[i][j] = true;
+                            }
                         }
                     }
                 }
+            } else { // Move an existing ship
+                // TODO
             }
-            
-            //backEnd.update();
         }
     }
     
@@ -207,7 +220,7 @@ public class FrontEnd extends GameContainer {
                 float alpha = 32;
                 
                 alpha = mouseSlotX == i && mouseSlotY == j ? 64 : alpha;
-                if(computerBombs[i][j]) {
+                if(computerShips[i][j]) {
                     alpha = 255;
                 }
                 
@@ -237,7 +250,7 @@ public class FrontEnd extends GameContainer {
         }
         
         // Ship placing guide
-        if(nextShipID < 5) {
+        /*if(nextShipID < 5) {
             screenBuffer.fill(collision ? 192 : 0, 0, 0, collision ? 192 : 64);
             screenBuffer.rect(
                     boardOffsetX + mouseSlotX * (boardTileW + boardTileGap) + 4,
@@ -245,7 +258,7 @@ public class FrontEnd extends GameContainer {
                     (boardTileW + boardTileGap) * (shipOrientation ? SHIPS[nextShipID] : 1) - boardTileGap - 8,
                     (boardTileH + boardTileGap) * (shipOrientation ? 1 : SHIPS[nextShipID]) - boardTileGap - 8
             );
-        }
+        }*/
         
         screenBuffer.endDraw();
         
