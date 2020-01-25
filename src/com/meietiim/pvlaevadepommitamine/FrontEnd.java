@@ -63,9 +63,10 @@ public class FrontEnd extends GameContainer {
     
     public int action; // Use ACTION_... constants
     
-    public final static int ERROR_UNKNOWN = 1;
-    public final static int ERROR_INCORRECT_PLACEMENT = 2;
-    public final static int ERROR_OUT_OF_SHIPS = 3;
+    public final static int ERROR_NONE = 1;
+    public final static int ERROR_UNKNOWN = 2;
+    public final static int ERROR_INCORRECT_PLACEMENT = 3;
+    public final static int ERROR_OUT_OF_SHIPS = 4;
     
     public int error; // Use ERROR_... constants
     
@@ -82,6 +83,9 @@ public class FrontEnd extends GameContainer {
     
     // ### A CREATIVE NAME ###
     public SplittableRandom random;
+    
+    // ### DEBUGGING ###
+    private boolean collision;
     
     // Make this class a singleton
     private FrontEnd() {
@@ -104,55 +108,66 @@ public class FrontEnd extends GameContainer {
     
     @Override
     public void updateTick() {
-        // Find the slot in which the mouse is in, but only if the mouse is not in a gap
-        if((int)((game.mouseX - boardOffsetX) / (boardTileW + boardTileGap)) <= boardTileW &&
-                (int)((game.mouseY - boardOffsetY) / (boardTileH + boardTileGap)) <= boardTileH) {
-            mouseSlotX = (int)((game.mouseX - boardOffsetX) / (boardTileW + boardTileGap));
-            mouseSlotY = (int)((game.mouseY - boardOffsetY) / (boardTileH + boardTileGap));
+        // If mouse inside the grid
+        if(game.mouseX >= boardOffsetX && game.mouseY >= boardOffsetY &&
+                game.mouseX <= boardOffsetX+10*(boardTileW+boardTileGap) &&
+                game.mouseY <= boardOffsetY+10*(boardTileH+boardTileGap)) {
+            
+            // Find the slot in which the mouse is in,
+            // but only if the mouse is not in a gap
+            if ((int) ((game.mouseX - boardOffsetX) / (boardTileW + boardTileGap)) <= boardTileW &&
+                    (int) ((game.mouseY - boardOffsetY) / (boardTileH + boardTileGap)) <= boardTileH) {
+                
+                // Find a slot the mouse is in
+                mouseSlotX = (int) ((game.mouseX - boardOffsetX) / (boardTileW + boardTileGap));
+                mouseSlotY = (int) ((game.mouseY - boardOffsetY) / (boardTileH + boardTileGap));
+            }
         }
         
+        // Rotate ship
+        if(game.input.isKeyDown('R')) {
+            shipOrientation = !shipOrientation;
+        }
+    
+        // Show if placing ship there is legal
+        collision = true;
+        if(nextShipID < 5) {
+    
+            int shipX = mouseSlotX;
+            int shipY = mouseSlotY;
+            int shipW = shipOrientation ? SHIPS[nextShipID] : 1;
+            int shipH = shipOrientation ? 1 : SHIPS[nextShipID];
+    
+            collision = !isSpaceFree(shipX, shipY, shipW, shipH, playerShips);
+        }
+    
+    
+        // DEBUGGING ONLY, Place ships if any left
         if(game.input.isButtonDown(PConstants.LEFT) && nextShipID < 5) {
             action = 0;
             playerPlaceShipX = mouseSlotX;
             playerPlaceShipY = mouseSlotY;
-            
+    
             int dimension = SHIPS[nextShipID];
-            if(shipOrientation) {
+            if (shipOrientation) {
                 playerPlaceShipW = dimension;
                 playerPlaceShipH = 1;
             } else {
                 playerPlaceShipW = 1;
                 playerPlaceShipH = dimension;
             }
-            
+    
             // Check if the ship is out of bound
-            boolean correctPlacement = false;
-            if(playerPlaceShipX >= 0 && playerPlaceShipY >= 0 &&
-                    playerPlaceShipX+playerPlaceShipW-1 < 10 &&
-                    playerPlaceShipY+playerPlaceShipH-1 < 10) {
-                correctPlacement = true;
-            }
-            
-            // Check if the ship overlaps with any other ship
-            for(int i = 0; i < playerShipData.length; i++) {
-                // Skip if ship doesn't exist
-                if(playerShipData[i][3] == 0) continue;
-                
-                // Check collision
-                if(overlap(playerPlaceShipX-1,
-                        playerPlaceShipY-1,
-                        playerPlaceShipX+playerPlaceShipW,
-                        playerPlaceBombY+playerPlaceShipH,
-                        playerShipData[i][0]-1,
-                        playerShipData[i][1]-1,
-                        playerShipData[i][0]+playerShipData[i][2],
-                        playerShipData[i][1]+playerShipData[i][3])) {
-                    correctPlacement = false;
-                    break;
-                }
-            }
-            
-            if(correctPlacement) {
+            boolean correctPlacement = isSpaceFree(
+                    playerPlaceShipX,
+                    playerPlaceShipY,
+                    playerPlaceShipW,
+                    playerPlaceShipH,
+                    playerShips
+            );
+    
+    
+            if (correctPlacement) {
                 playerShipData[nextShipID] = new int[]{
                         playerPlaceShipX,
                         playerPlaceShipY,
@@ -162,17 +177,17 @@ public class FrontEnd extends GameContainer {
                         0
                 };
                 nextShipID++;
-                
+        
                 for (int i = playerPlaceShipX; i < playerPlaceShipX + playerPlaceShipW; i++) {
                     for (int j = playerPlaceShipY; j < playerPlaceShipY + playerPlaceShipH; j++) {
-                        if (i > 0 && j > 0 && i < 10 && j < 10) {
+                        if (i >= 0 && j >= 0 && i < 10 && j < 10) {
                             playerShips[i][j] = true;
                         }
                     }
                 }
             }
             
-            backEnd.update();
+            //backEnd.update();
         }
     }
     
@@ -182,7 +197,7 @@ public class FrontEnd extends GameContainer {
         
         screenBuffer.beginDraw();
         
-        screenBuffer.fill(204, 126, 10);
+        screenBuffer.fill(66, 164, 245);
         screenBuffer.noStroke();
         screenBuffer.rect(0, 0, game.pixelWidth, game.pixelHeight);
         
@@ -192,7 +207,7 @@ public class FrontEnd extends GameContainer {
                 float alpha = 32;
                 
                 alpha = mouseSlotX == i && mouseSlotY == j ? 64 : alpha;
-                if(playerShips[i][j]) {
+                if(computerBombs[i][j]) {
                     alpha = 255;
                 }
                 
@@ -214,10 +229,21 @@ public class FrontEnd extends GameContainer {
             
             // Draw a black rectangle as the ship
             screenBuffer.rect(
-                    boardOffsetX + playerShipData[i][0] * (boardTileW + boardTileGap),
-                    boardOffsetY + playerShipData[i][1] * (boardTileH + boardTileGap),
-                    (boardTileW + boardTileGap) * playerShipData[i][2] - boardTileGap,
-                    (boardTileH + boardTileGap) * playerShipData[i][3] - boardTileGap
+                    boardOffsetX + playerShipData[i][0] * (boardTileW + boardTileGap) + 4,
+                    boardOffsetY + playerShipData[i][1] * (boardTileH + boardTileGap) + 4,
+                    (boardTileW + boardTileGap) * playerShipData[i][2] - boardTileGap - 8,
+                    (boardTileH + boardTileGap) * playerShipData[i][3] - boardTileGap - 8
+            );
+        }
+        
+        // Ship placing guide
+        if(nextShipID < 5) {
+            screenBuffer.fill(collision ? 192 : 0, 0, 0, collision ? 192 : 64);
+            screenBuffer.rect(
+                    boardOffsetX + mouseSlotX * (boardTileW + boardTileGap) + 4,
+                    boardOffsetY + mouseSlotY * (boardTileH + boardTileGap) + 4,
+                    (boardTileW + boardTileGap) * (shipOrientation ? SHIPS[nextShipID] : 1) - boardTileGap - 8,
+                    (boardTileH + boardTileGap) * (shipOrientation ? 1 : SHIPS[nextShipID]) - boardTileGap - 8
             );
         }
         
@@ -227,13 +253,69 @@ public class FrontEnd extends GameContainer {
         
     }
     
-    public boolean overlap(int oneLX, int oneLY, int oneRX, int oneRY,
-                    int twoLX, int twoLY, int twoRX, int twoRY) {
-        if(oneLX > twoRX || twoLX > oneRX) {
+    public boolean shipOverlap(int oneLX, int oneLY, int oneRX, int oneRY,
+                               int twoLX, int twoLY, int twoRX, int twoRY) {
+        if (oneLY > twoRY || twoLY > oneRY) {
             return false;
         }
         
-        return oneLY >= twoRY && twoLY >= oneRY;
+        if (oneLX > twoRX || twoLX > oneRX) {
+            return false;
+        }
+    
+        return true;
+    }
+    
+    public boolean overlap(int oneLX, int oneLY, int oneRX, int oneRY,
+                           int twoLX, int twoLY, int twoRX, int twoRY) {
+        if (oneLY > twoRY || twoLY > oneRY) {
+            return false;
+        }
+        
+        if (oneLX > twoRX || twoLX > oneRX) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public boolean isSpaceFree(int shipX, int shipY, int shipW, int shipH, boolean[][] shipGrid) {
+        // Variable that will be returned
+        boolean spaceFree = false;
+        
+        // Ship's collision mask boundaries (expanded by one in all directions)
+        // It clamps the coordinates to the board's boundaries
+        int shipMaskX1 = Math.max(0, shipX - 1);
+        int shipMaskY1 = Math.max(0, shipY - 1);
+        int shipMaskX2 = Math.min(9, shipX + shipW);
+        int shipMaskY2 = Math.min(9, shipY + shipH);
+    
+        // Is the ship on the board
+        if (shipX >= 0 &&
+                shipY >= 0 &&
+                shipX + shipW - 1 < 10 &&
+                shipY + shipH - 1 < 10) {
+            spaceFree = true;
+        }
+    
+        // If the ship is within the boundaries,
+        // check for collision with other ships
+        if (spaceFree) {
+            
+            // Loop over the entire board
+            for (int i = shipMaskX1; i <= shipMaskX2; i++) {
+                for (int j = shipMaskY1; j <= shipMaskY2; j++) {
+                
+                    // Another ship is on our way, return false
+                    if (shipGrid[i][j]) {
+                        return false;
+                    }
+                }
+            }
+            
+        }
+        
+        return spaceFree;
     }
     
     
@@ -295,4 +377,21 @@ public class FrontEnd extends GameContainer {
         }
     *
     * */
+    
+    
+    
+    /*for (int i = 0; i < playerShipData.length; i++) {
+                // Check collision
+                if (shipOverlap(shipX1,
+                        shipY1,
+                        shipX2,
+                        shipY2,
+                        playerShipData[i][0],
+                        playerShipData[i][1],
+                        playerShipData[i][0] + playerShipData[i][2],
+                        playerShipData[i][1] + playerShipData[i][3])) {
+                    collision = true;
+                    break;
+                }
+            }*/
 }
