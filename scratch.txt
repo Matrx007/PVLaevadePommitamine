@@ -1,18 +1,48 @@
-if (MAIN.playerShips[AiBombdX][AiBombdY]){
-                                MAIN.response = RESPONSE_HIT;
-                                // Searches on what ship the hid has been made to and then registres it
-                                for (int n = 0;n <MAIN.playerShipData.length;n++){
-                                    if (AiBombdX >= MAIN.playerShipData[n][0] &&
-                                            AiBombdX <= MAIN.playerShipData[n][0] + MAIN.playerShipData[n][2] -1 &&
-                                            AiBombdY >= MAIN.playerShipData[n][1] &&
-                                            AiBombdY <= MAIN.playerShipData[n][1] + MAIN.playerShipData[n][3] -1){
-                                        MAIN.playerShipData[n][4]++;
-                                        // Checks if ships size is equal to the count of hits, then the ship is dead
-                                        if (Math.max(MAIN.playerShipData[n][2],
-                                                MAIN.playerShipData[n][3]) >= MAIN.playerShipData[n][4]){
-                                            MAIN.playerShipData[n][5] = 1;
-                                            // Responds that ship is dead
-                                            MAIN.response = RESPONSE_DEAD;
-                                        }
-                                    }
-                                }
+
+/**
+ * @return Returns a ship that contains given point. If
+ *         not found, -1 will be returned.
+ */
+public void int getShipID(int checkX, int checkY, int[][] shipData) {
+
+    // Iterates thru all the ships
+    for(int i = 0; i < shipData.length; i++) {
+
+        // If the given point lies in the boundaries of that ship
+        // return the ship's ID.
+        if(bombX >= shipData[i][0] &&
+                bombY >= shipData[i][1] &&
+                bombX < shipData[i][0]+shipData[i][2] &&
+                bombY < shipData[i][1]+shipData[i][3]) {
+            return i;
+        }
+    }
+
+    // If none of the ships contained the point, return -1
+    return -1;
+}
+
+/**
+ *
+ *
+ * @return Returns a ship that contains given point. If
+ *         not found, -1 will be returned.
+ */
+public void boolean hasShipSunk(boolean[][] bombs, int[] targetShipData) {
+
+    // Bomb counter
+    int foundBombs;
+
+    // Iterate thru each point in the ship and count all the bombs in it
+    for(int i = targetShipData[0]; i < targetShipData[0]+targetShipData[2]; i++) {
+        for(int j = targetShipData[1]; j < targetShipData[1]+targetShipData[3]; j++) {
+            if(bombs[i][j]) {
+                foundBombs++;
+            }
+        }
+    }
+
+    // If the number of found bombs on the ship is equal with the
+    // length of the ship, the ship has sunk
+    return foundBombs == Math.max(targetShipData[2], targetShipData[3]);
+}
