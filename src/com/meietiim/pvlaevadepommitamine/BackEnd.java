@@ -1,6 +1,6 @@
 package com.meietiim.pvlaevadepommitamine;
 
-import java.util.Arrays;
+import java.util.SplittableRandom;
 
 import static com.meietiim.pvlaevadepommitamine.FrontEnd.*;
 
@@ -16,10 +16,22 @@ public class BackEnd {
     int playerPlaceShipW = MAIN.playerPlaceShipW;
     int playerPlacedBombX = MAIN.playerPlaceBombX;
     int playerPlacedBombY = MAIN.playerPlaceBombY;
-    
+
+    // AI Data storage
+    private boolean AiShipsPlaced = false;
+    private int AiPlacedX = 0;
+    private int AiPlacedY = 0;
+    private int AiPlacedH = 0;
+    private int AiPlacedW = 0;
+    private int AiBombdX = 0;
+    private int AiBombdY = 0;
+    public static final int[] SHIPS = new int[] {5, 4, 3, 3, 2};
+
+    //Random
+    private SplittableRandom random = new SplittableRandom();
     public void update() {
         MAIN.response = RESPONSE_EMPTY;
-        MAIN.error = ERROR_UNKNOWN;
+        MAIN.error = ERROR_NONE;
         
         switch (MAIN.action) {
             case ACTION_PLACE_SHIP: // Player placed a ship
@@ -86,7 +98,48 @@ public class BackEnd {
             
                 break;
             case ACTION_PLACE_COMPUTER: // Computer's turn
-                // TODO
+                if (AiShipsPlaced){ // If true then ships are placed otherwise place ships
+                    // TODO Pommitamine
+
+                }
+                else {
+                    int i = 0;
+                    while (i < MAIN.computerShipData.length) {
+                        if (MAIN.computerShipData[i][3] == 0){
+                            // AI places ships
+                            // Gets X and Y for that ship to fit inn the area
+                            if (random.nextBoolean()) { // If true ship will be placed horizontally
+                                                        // Otherwise ship will be placed vertically
+                                AiPlacedX = random.nextInt(10 - SHIPS[i]);
+                                AiPlacedY = random.nextInt(10);
+                                AiPlacedH = 1;
+                                AiPlacedW = SHIPS[i];
+                            }
+                            else {
+                                AiPlacedX = random.nextInt(10);
+                                AiPlacedY = random.nextInt(10 - SHIPS[i]);
+                                AiPlacedH = SHIPS[i];
+                                AiPlacedW = 1;
+                            }
+                            // Check if ship fits
+                            if (MAIN.isSpaceFree(AiPlacedX, AiPlacedY, AiPlacedW, AiPlacedH, MAIN.computerShips));{
+                                for(int x = AiPlacedX; x < AiPlacedX+AiPlacedW -1; x++) {
+                                    for(int y = AiPlacedY; y < AiPlacedY+AiPlacedH -1; y++) {
+                                        MAIN.computerShips[x][y] = true;
+                                    }
+                                } // Adds ships to computerShipData
+                                MAIN.computerShipData[i] = new int[] {AiPlacedX, AiPlacedY,
+                                        AiPlacedW, AiPlacedH, 0, 0};
+                                i++; // tells to to next ship
+                            }
+                            //If all ships are placed it marks placing ships done
+                            if (i == 5) {AiShipsPlaced = true;}
+                        }
+                        else { // If ship exists then moves to another ship
+                            i++;
+                        }
+                    }
+                }
                 break;
         }
     }
