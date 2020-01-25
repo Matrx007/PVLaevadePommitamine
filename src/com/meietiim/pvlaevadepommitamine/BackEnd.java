@@ -100,6 +100,42 @@ public class BackEnd {
             case ACTION_PLACE_COMPUTER: // Computer's turn
                 if (AiShipsPlaced){ // If true then ships are placed otherwise place ships
                     // TODO Pommitamine
+                    int i = 0;
+                    int attempts = 0;
+                    while (i != 1){
+                        AiBombdX = random.nextInt( 10);
+                        AiBombdY = random.nextInt( 10);
+                        attempts++;
+                        if (attempts >= 101) { break; }// If something goes wrong it will stop the endless loop
+                        if (MAIN.computerBombs[AiBombdX][AiBombdY] != true){
+                            // If that place has been bombed it will take new coordinates
+                            // After that it will look if player has ship on that point.
+                            if (MAIN.playerShips[AiBombdX][AiBombdY]){
+                                MAIN.response = RESPONSE_HIT;
+                                // Searches on what ship the hid has been made to and then registres it
+                                for (int n = 0;n <MAIN.playerShipData.length;n++){
+                                    if (AiBombdX >= MAIN.playerShipData[n][0] &&
+                                            AiBombdX <= MAIN.playerShipData[n][0] + MAIN.playerShipData[n][2] -1 &&
+                                            AiBombdY >= MAIN.playerShipData[n][1] &&
+                                            AiBombdY <= MAIN.playerShipData[n][1] + MAIN.playerShipData[n][3] -1){
+                                        MAIN.playerShipData[n][4]++;
+                                        // Checks if ships size is equal to the count of hits, then the ship is dead
+                                        if (Math.max(MAIN.playerShipData[n][2],
+                                                MAIN.playerShipData[n][3]) >= MAIN.playerShipData[n][4]){
+                                            MAIN.playerShipData[n][5] = 1;
+                                            // Responds that ship is dead
+                                            MAIN.response = RESPONSE_DEAD;
+                                        }
+                                    }
+                                }
+                            }
+                            MAIN.computerBombs[AiBombdX][AiBombdY] = true;
+                            i++;
+                        }
+                        else {
+
+                        }
+                    }
 
                 }
                 else {
@@ -123,8 +159,8 @@ public class BackEnd {
                             }
                             // Check if ship fits
                             if (MAIN.isSpaceFree(AiPlacedX, AiPlacedY, AiPlacedW, AiPlacedH, MAIN.computerShips)){
-                                for(int x = AiPlacedX; x < AiPlacedX + AiPlacedW - 1; x++) {
-                                    for(int y = AiPlacedY; y < AiPlacedY + AiPlacedH - 1; y++) {
+                                for(int x = AiPlacedX; x <= AiPlacedX + AiPlacedW - 1; x++) {
+                                    for(int y = AiPlacedY; y <= AiPlacedY + AiPlacedH - 1; y++) {
                                         MAIN.computerShips[x][y] = true;
                                     }
                                 } // Adds ships to computerShipData
