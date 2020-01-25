@@ -1,8 +1,5 @@
 if (MAIN.playerShips[AiBombdX][AiBombdY]){
                                 MAIN.response = RESPONSE_HIT;
-
-                                AiBombData[bombCase][0] = AiBombdX; // stores x and y from the last hit
-                                AiBombData[bombCase][1] = AiBombdY;
                                 // Searches on what ship the hid has been made to and then registres it
                                 for (int n = 0;n <MAIN.playerShipData.length;n++){
                                     if (AiBombdX >= MAIN.playerShipData[n][0] &&
