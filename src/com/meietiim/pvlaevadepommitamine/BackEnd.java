@@ -1,5 +1,6 @@
 package com.meietiim.pvlaevadepommitamine;
 
+import java.util.Arrays;
 import java.util.SplittableRandom;
 
 import static com.meietiim.pvlaevadepommitamine.FrontEnd.*;
@@ -32,7 +33,6 @@ public class BackEnd {
     public void update() {
         MAIN.response = RESPONSE_EMPTY;
         MAIN.error = ERROR_NONE;
-        
         switch (MAIN.action) {
             case ACTION_PLACE_SHIP: // Player placed a ship
                 // Store placed ship in playerShip
