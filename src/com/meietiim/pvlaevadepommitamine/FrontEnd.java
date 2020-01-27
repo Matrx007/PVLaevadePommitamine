@@ -79,13 +79,34 @@ public class FrontEnd extends GameContainer {
     // ### INPUT ###
     public int mouseSlotX, mouseSlotY;
     
-    private boolean shipOrientation; // true - horizontal, false - vertical
+    // ### GAME LOGIC ###
+    
+    // --- Placing a ship ---
+    private boolean guideShipOrientation; // true - horizontal, false - vertical
+    private boolean guideShipVisible; // Show or hide the guide ship
+    private int guideShipW, guideShipH; // The width and height of the guide ship
+    
+    // --- Moving a ship ---
+    
+    // The ID of the ship we are dragging
+    private int dragShipID;
+    // The original location of the ship before it was being dragged
+    private int dragShipOriginalX, dragShipOriginalY;
+    // The new location of the ship
+    private int dragShipNewX, dragShipNewY;
+    // The location of where the ship is hovering
+    private float dragShipTargetX, dragShipTargetY;
+    // The location of ship moving animation
+    private float dragShipAnimX, dragShipAnimY;
     
     // ### A CREATIVE NAME ###
     public SplittableRandom random;
     
     // ### DEBUGGING ###
     private boolean collision;
+    
+    // ### GAME ###
+    private Grid playerGrid, computerGrid;
     
     // Make this class a singleton
     private FrontEnd() {
@@ -104,10 +125,23 @@ public class FrontEnd extends GameContainer {
         
         boardOffsetX =  (game.pixelWidth - boardTileW*10 - boardTileGap*9) / 2f;
         boardOffsetY = (game.pixelHeight - boardTileH*10 - boardTileGap*9) / 2f;
+        
+        // ### GAME ###
+        playerGrid = new PlayerGrid(
+                64, 64,
+                48, 48, 8, playerShips
+        );
+        computerGrid = new Grid(
+                64+64+(48+8)*10, 64,
+                48, 48, 8, playerBombs
+        );
     }
     
     @Override
     public void updateTick() {
+        
+        playerGrid.update();
+        computerGrid.update();
         // If mouse inside the grid
         if(game.mouseX >= boardOffsetX && game.mouseY >= boardOffsetY &&
                 game.mouseX <= boardOffsetX+10*(boardTileW+boardTileGap) &&
@@ -126,59 +160,62 @@ public class FrontEnd extends GameContainer {
         
         // Rotate ship
         if(game.input.isKeyDown('R')) {
-            shipOrientation = !shipOrientation;
+            guideShipOrientation = !guideShipOrientation;
         }
         
-        // DEBUG ONLY generates enemy ships
-        if(game.input.isKeyDown('T')) {
-            computerShips = new boolean[10][10];
-            
-            action = ACTION_PLACE_COMPUTER;
-            backEnd.update();
-            System.out.println("Done");
-        }
-    
         // Show if placing ship there is legal
         collision = true;
         if(nextShipID < 5) {
-    
-            int shipX = mouseSlotX;
-            int shipY = mouseSlotY;
-            int shipW = shipOrientation ? SHIPS[nextShipID] : 1;
-            int shipH = shipOrientation ? 1 : SHIPS[nextShipID];
-    
-            collision = !isSpaceFree(shipX, shipY, shipW, shipH, playerShips);
-        }
-    
-    
-        // DEBUGGING ONLY, Place ships if any left
-        if(game.input.isButtonDown(PConstants.LEFT) && nextShipID < 5 && false) {
             
-            // Place a ship
-            if(isSpaceFree(mouseSlotX, mouseSlotY, 1, 1, playerShips)) {
+            int shipX = playerGrid.mouseSlotX;
+            int shipY = playerGrid.mouseSlotY;
+            int shipW = guideShipOrientation ? SHIPS[nextShipID] : 1;
+            int shipH = guideShipOrientation ? 1 : SHIPS[nextShipID];
+            
+            collision = !isSpaceAroundFree(shipX, shipY, shipW, shipH, playerShips);
+        }
+        
+        // Hide the guide ship by default
+        guideShipVisible = false;
+
+        // Calculating the width and height of the ship
+        if(nextShipID < 5) {
+            // Make the guide ship visible
+            guideShipVisible = true;
+            
+            // Calculate the width and height of the ship
+            int dimension = SHIPS[nextShipID];
+            if (guideShipOrientation) {
+                playerPlaceShipW = dimension;
+                playerPlaceShipH = 1;
+            } else {
+                playerPlaceShipW = 1;
+                playerPlaceShipH = dimension;
+            }
+
+            // Set guide ship parameters
+            guideShipW = playerPlaceShipW;
+            guideShipH = playerPlaceShipH;
+        }
+        
+        if(game.input.isButtonDown(PConstants.LEFT)) {
+
+            // Only place a ship if we have any ships left
+            if (nextShipID < 5) {
                 action = 0;
                 playerPlaceShipX = mouseSlotX;
                 playerPlaceShipY = mouseSlotY;
-    
-                int dimension = SHIPS[nextShipID];
-                if (shipOrientation) {
-                    playerPlaceShipW = dimension;
-                    playerPlaceShipH = 1;
-                } else {
-                    playerPlaceShipW = 1;
-                    playerPlaceShipH = dimension;
-                }
-    
+
                 // Check if the ship is out of bound
-                boolean correctPlacement = isSpaceFree(
+                boolean correctPlacement = isSpaceAroundFree(
                         playerPlaceShipX,
                         playerPlaceShipY,
                         playerPlaceShipW,
                         playerPlaceShipH,
                         playerShips
                 );
-    
-    
+
+
                 if (correctPlacement) {
                     playerShipData[nextShipID] = new int[]{
                             playerPlaceShipX,
@@ -189,7 +226,7 @@ public class FrontEnd extends GameContainer {
                             0
                     };
                     nextShipID++;
-        
+    
                     for (int i = playerPlaceShipX; i < playerPlaceShipX + playerPlaceShipW; i++) {
                         for (int j = playerPlaceShipY; j < playerPlaceShipY + playerPlaceShipH; j++) {
                             if (i >= 0 && j >= 0 && i < 10 && j < 10) {
@@ -198,8 +235,6 @@ public class FrontEnd extends GameContainer {
                         }
                     }
                 }
-            } else { // Move an existing ship
-                // TODO
             }
         }
     }
@@ -214,7 +249,7 @@ public class FrontEnd extends GameContainer {
         screenBuffer.noStroke();
         screenBuffer.rect(0, 0, game.pixelWidth, game.pixelHeight);
         
-        screenBuffer.noStroke();
+        /*screenBuffer.noStroke();
         for(int i = 0; i < 10; i++) {
             for(int j = 0; j < 10; j++) {
                 float alpha = 32;
@@ -222,6 +257,14 @@ public class FrontEnd extends GameContainer {
                 alpha = mouseSlotX == i && mouseSlotY == j ? 64 : alpha;
                 if(computerShips[i][j]) {
                     alpha = 255;
+                }
+                
+                if(nextShipID < 5) {
+                    if (i >= mouseSlotX && j >= mouseSlotY &&
+                            i < mouseSlotX + (guideShipOrientation ? SHIPS[nextShipID] : 1) &&
+                            j < mouseSlotY + (guideShipOrientation ? 1 : SHIPS[nextShipID])) {
+                        alpha = 0;
+                    }
                 }
                 
                 screenBuffer.fill(0, 0, 0, alpha);
@@ -242,21 +285,24 @@ public class FrontEnd extends GameContainer {
             
             // Draw a black rectangle as the ship
             screenBuffer.rect(
-                    boardOffsetX + playerShipData[i][0] * (boardTileW + boardTileGap) + 4,
-                    boardOffsetY + playerShipData[i][1] * (boardTileH + boardTileGap) + 4,
-                    (boardTileW + boardTileGap) * playerShipData[i][2] - boardTileGap - 8,
-                    (boardTileH + boardTileGap) * playerShipData[i][3] - boardTileGap - 8
+                    boardOffsetX + playerShipData[i][0] * (boardTileW + boardTileGap),
+                    boardOffsetY + playerShipData[i][1] * (boardTileH + boardTileGap),
+                    (boardTileW + boardTileGap) * playerShipData[i][2] - boardTileGap,
+                    (boardTileH + boardTileGap) * playerShipData[i][3] - boardTileGap
             );
-        }
+        }*/
+        
+        playerGrid.render();
+        computerGrid.render();
         
         // Ship placing guide
         /*if(nextShipID < 5) {
             screenBuffer.fill(collision ? 192 : 0, 0, 0, collision ? 192 : 64);
             screenBuffer.rect(
-                    boardOffsetX + mouseSlotX * (boardTileW + boardTileGap) + 4,
-                    boardOffsetY + mouseSlotY * (boardTileH + boardTileGap) + 4,
-                    (boardTileW + boardTileGap) * (shipOrientation ? SHIPS[nextShipID] : 1) - boardTileGap - 8,
-                    (boardTileH + boardTileGap) * (shipOrientation ? 1 : SHIPS[nextShipID]) - boardTileGap - 8
+                    64 + mouseSlotX * (boardTileW + boardTileGap),
+                    64 + mouseSlotY * (boardTileH + boardTileGap),
+                    (boardTileW + boardTileGap) * (guideShipOrientation ? guideShipW : 1) - boardTileGap,
+                    (boardTileH + boardTileGap) * (guideShipOrientation ? 1 : guideShipH) - boardTileGap
             );
         }*/
         
@@ -275,7 +321,7 @@ public class FrontEnd extends GameContainer {
         if (oneLX > twoRX || twoLX > oneRX) {
             return false;
         }
-    
+        
         return true;
     }
     
@@ -292,7 +338,7 @@ public class FrontEnd extends GameContainer {
         return true;
     }
     
-    public boolean isSpaceFree(int shipX, int shipY, int shipW, int shipH, boolean[][] shipGrid) {
+    public boolean isSpaceAroundFree(int shipX, int shipY, int shipW, int shipH, boolean[][] shipGrid) {
         // Variable that will be returned
         boolean spaceFree = false;
         
@@ -302,7 +348,7 @@ public class FrontEnd extends GameContainer {
         int shipMaskY1 = Math.max(0, shipY - 1);
         int shipMaskX2 = Math.min(9, shipX + shipW);
         int shipMaskY2 = Math.min(9, shipY + shipH);
-    
+        
         // Is the ship on the board
         if (shipX >= 0 &&
                 shipY >= 0 &&
@@ -310,7 +356,7 @@ public class FrontEnd extends GameContainer {
                 shipY + shipH - 1 < 10) {
             spaceFree = true;
         }
-    
+        
         // If the ship is within the boundaries,
         // check for collision with other ships
         if (spaceFree) {
@@ -318,7 +364,7 @@ public class FrontEnd extends GameContainer {
             // Loop over the entire board
             for (int i = shipMaskX1; i <= shipMaskX2; i++) {
                 for (int j = shipMaskY1; j <= shipMaskY2; j++) {
-                
+                    
                     // Another ship is on our way, return false
                     if (shipGrid[i][j]) {
                         return false;
@@ -329,6 +375,202 @@ public class FrontEnd extends GameContainer {
         }
         
         return spaceFree;
+    }
+    
+    public void fillNeighbouring(int shipX, int shipY, int shipW, int shipH, boolean value, boolean[][] array) {
+        // Ship's collision mask boundaries (expanded by one in all directions)
+        // It clamps the coordinates to the board's boundaries
+        int shipMaskX1 = Math.max(0, shipX - 1);
+        int shipMaskY1 = Math.max(0, shipY - 1);
+        int shipMaskX2 = Math.min(9, shipX + shipW);
+        int shipMaskY2 = Math.min(9, shipY + shipH);
+        
+        // Loop thru the region and fill it with 'value'
+        for (int i = shipMaskX1; i <= shipMaskX2; i++) {
+            for (int j = shipMaskY1; j <= shipMaskY2; j++) {
+                array[i][j] = value;
+            }
+        }
+    }
+    
+    public void fillArea(int areaX, int areaY, int areaW, int areaH, boolean value, boolean[][] array) {
+        // Clamp the coordinates to the board's boundaries
+        int areaMaskX1 = Math.max(0, areaX);
+        int areaMaskY1 = Math.max(0, areaY);
+        int areaMaskX2 = Math.min(9, areaX + areaW - 1);
+        int areaMaskY2 = Math.min(9, areaY + areaH - 1);
+        
+        // Loop thru the region and fill it with 'value'
+        for (int i = areaMaskX1; i <= areaMaskX2; i++) {
+            for (int j = areaMaskY1; j <= areaMaskY2; j++) {
+                array[i][j] = value;
+            }
+        }
+    }
+    
+    /**
+     * @param searchX The location to search
+     * @param searchY The location to search.
+     * @param shipData The array to search for the ship
+     *
+     * @return Return's the index of found the found ship
+     * */
+    public int shipAt(int searchX, int searchY, int[][] shipData) {
+        
+        // Is the target point within the board
+        if (searchX >= 0 &&
+                searchY >= 0 &&
+                searchX < 10 &&
+                searchY < 10) {
+            return -1;
+        }
+        
+        // Search for the ship
+        for (int i = 0; i < shipData.length; i++) {
+            // Another ship is on our way, return false
+            if (searchX >= shipData[i][0] &&
+                    searchY >= shipData[i][1] &&
+                    searchX < shipData[i][0]+shipData[i][2]-1 &&
+                    searchY < shipData[i][1]+shipData[i][3]-1) {
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+    
+    
+    
+    
+    
+    private class Grid {
+        
+        // Board properties
+        protected int boardTileW = 48;
+        protected int boardTileH = 48;
+        protected int boardTileGap = 8;
+        protected float boardOffsetX;
+        protected float boardOffsetY;
+        
+        // The mouse slot in which the mouse is in
+        public int mouseSlotX, mouseSlotY;
+    
+        public Grid(float boardOffsetX, float boardOffsetY,
+                    int boardTileW, int boardTileH,
+                    int boardTileGap, boolean[][] array) {
+            this.boardTileW = boardTileW;
+            this.boardTileH = boardTileH;
+            this.boardOffsetX = boardOffsetX;
+            this.boardOffsetY = boardOffsetY;
+            this.boardTileGap = boardTileGap;
+        }
+    
+        public void update() {
+            // If mouse inside the grid
+            if(game.mouseX >= boardOffsetX && game.mouseY >= boardOffsetY &&
+                    game.mouseX <= boardOffsetX+10*(boardTileW+boardTileGap) &&
+                    game.mouseY <= boardOffsetY+10*(boardTileH+boardTileGap)) {
+        
+                // Find the slot in which the mouse is in,
+                // but only if the mouse is not in a gap
+                if ((int) ((game.mouseX - boardOffsetX) /
+                                (boardTileW + boardTileGap)) <= boardTileW &&
+                        (int) ((game.mouseY - boardOffsetY) /
+                                (boardTileH + boardTileGap)) <= boardTileH) {
+            
+                    // Find a slot the mouse is in
+                    mouseSlotX = (int) ((game.mouseX - boardOffsetX) /
+                            (boardTileW + boardTileGap));
+                    mouseSlotY = (int) ((game.mouseY - boardOffsetY) /
+                            (boardTileH + boardTileGap));
+                }
+            } else {
+                // If the mouse is not inside the grid
+                mouseSlotX = -1;
+                mouseSlotY = -1;
+            }
+        }
+        
+         public void render() {
+    
+             // Draw the grid
+             screenBuffer.noStroke();
+             for (int i = 0; i < 10; i++) {
+                 for (int j = 0; j < 10; j++) {
+    
+                     // The default transparency of a square
+                     float alpha = 32;
+            
+                     // If this is the square in which the mouse is
+                     // in, make it a bit more opaque
+                     alpha = mouseSlotX == i && mouseSlotY == j ? 64 : alpha;
+    
+                     // If the given array contains tru at [i, j],
+                     // make the square fully opaque
+                     if (computerShips[i][j]) {
+                         alpha = 255;
+                     }
+            
+                     screenBuffer.fill(0, 0, 0, alpha);
+                     screenBuffer.rect(boardOffsetX + (boardTileW + boardTileGap) * i,
+                             boardOffsetY + (boardTileH + boardTileGap) * j,
+                             boardTileW, boardTileH);
+                 }
+             }
+         }
+    }
+    
+    private class PlayerGrid extends Grid {
+    
+        public PlayerGrid(float boardOffsetX, float boardOffsetY,
+                    int boardTileW, int boardTileH,
+                    int boardTileGap, boolean[][] array) {
+            super(boardOffsetX, boardOffsetY,
+                    boardTileW, boardTileH, boardTileGap, array);
+        }
+    
+        public void update() {
+            super.update();
+        }
+        
+        public void render() {
+    
+             // Draw the grid
+             screenBuffer.noStroke();
+             for (int i = 0; i < 10; i++) {
+                 for (int j = 0; j < 10; j++) {
+    
+                     // The default transparency of a square
+                     float alpha = 32;
+            
+                     // If this is the square in which the mouse is
+                     // in, make it a bit more opaque
+                     alpha = mouseSlotX == i && mouseSlotY == j ? 64 : alpha;
+    
+                     // If the given array contains tru at [i, j],
+                     // make the square fully opaque
+                     if (computerShips[i][j]) {
+                         alpha = 255;
+                     }
+            
+                     screenBuffer.fill(0, 0, 0, alpha);
+                     screenBuffer.rect(boardOffsetX + (boardTileW + boardTileGap) * i,
+                             boardOffsetY + (boardTileH + boardTileGap) * j,
+                             boardTileW, boardTileH);
+                 }
+             }
+    
+             if (nextShipID < 5) {
+                 screenBuffer.fill(collision ? 192 : 0, 0, 0, collision ? 192 : 64);
+                 screenBuffer.rect(
+                         this.boardOffsetX + this.mouseSlotX * (this.boardTileW + this.boardTileGap),
+                         this.boardOffsetY + this.mouseSlotY * (this.boardTileH + this.boardTileGap),
+                         (this.boardTileW + this.boardTileGap) * (guideShipOrientation ? guideShipW : 1) - boardTileGap,
+                         (this.boardTileH + this.boardTileGap) * (guideShipOrientation ? 1 : guideShipH) - boardTileGap
+                 );
+        
+             }
+        }
     }
     
     

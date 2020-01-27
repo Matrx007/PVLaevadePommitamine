@@ -1,6 +1,5 @@
 package com.meietiim.pvlaevadepommitamine;
 
-import java.util.Arrays;
 import java.util.SplittableRandom;
 
 import static com.meietiim.pvlaevadepommitamine.FrontEnd.*;
@@ -158,7 +157,7 @@ public class BackEnd {
                                 AiPlacedW = 1;
                             }
                             // Check if ship fits
-                            if (MAIN.isSpaceFree(AiPlacedX, AiPlacedY, AiPlacedW, AiPlacedH, MAIN.computerShips)){
+                            if (MAIN.isSpaceAroundFree(AiPlacedX, AiPlacedY, AiPlacedW, AiPlacedH, MAIN.computerShips)){
                                 for(int x = AiPlacedX; x <= AiPlacedX + AiPlacedW - 1; x++) {
                                     for(int y = AiPlacedY; y <= AiPlacedY + AiPlacedH - 1; y++) {
                                         MAIN.computerShips[x][y] = true;

@@ -3,7 +3,7 @@
  * @return Returns a ship that contains given point. If
  *         not found, -1 will be returned.
  */
-public void int getShipID(int checkX, int checkY, int[][] shipData) {
+public int getShipID(int checkX, int checkY, int[][] shipData) {
 
     // Iterates thru all the ships
     for(int i = 0; i < shipData.length; i++) {
@@ -28,7 +28,7 @@ public void int getShipID(int checkX, int checkY, int[][] shipData) {
  * @return Returns a ship that contains given point. If
  *         not found, -1 will be returned.
  */
-public void boolean hasShipSunk(boolean[][] bombs, int[] targetShipData) {
+public boolean hasShipSunk(boolean[][] bombs, int[] targetShipData) {
 
     // Bomb counter
     int foundBombs;
