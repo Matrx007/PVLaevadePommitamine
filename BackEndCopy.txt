@@ -33,6 +33,11 @@ public class BackEnd {
     // AiBombData stores x y orientation length1 and 2, and if the case exists
     private int bombCase = 0;
     public static final int[] SHIPS = new int[] {5, 4, 3, 3, 2};
+    // Ship orientatsion cases
+    private final static int SHIP_UP = 1;
+    private final static int SHIP_DOWN = -1;
+    private final static int SHIP_RIGHT = 2;
+    private final static int SHIP_LEFT = -2;
 
     //Random
     private SplittableRandom random = new SplittableRandom();
@@ -75,7 +80,7 @@ public class BackEnd {
             case ACTION_PLACE_BOMB: // Player placed a bomb
                 MAIN.playerBombs[playerPlacedBombX][playerPlacedBombY] = true; // Marks bob on the field
                 if (MAIN.computerShips[playerPlacedBombX][playerPlacedBombY]){ // If there is a ship
-                    MAIN.response = RESPONSE_HIT; // it will sesponse hit
+                    MAIN.response = RESPONSE_HIT; // it will response hit
                     // And will add a bomb to ship data
                     MAIN.computerShipData[getShipID(playerPlacedBombX, playerPlacedBombY, MAIN.computerShipData)][4]++;
                     // it will check if ship has sunken
@@ -101,12 +106,14 @@ public class BackEnd {
                             if (guessingOrientation = true){ // If it does not know the orientation
                                 if (MAIN.computerBombs[x][y + 1]){
                                     if (MAIN.playerShips[x][y + 1]){
-                                        AiBombData[bombCase][2] = 1; // Tell the AI the orientation of the ship
+                                        AiBombData[bombCase][2] = SHIP_UP; // Tell the AI the orientation of the ship
+                                        AiBombData[bombCase][3]++;
                                         guessingOrientation = false; // We know orientation so we don't have to guess any more
                                     }
                                     else if (MAIN.computerBombs[x][y - 1]){
                                         if (MAIN.playerShips[x][y - 1]){
-                                            AiBombData[bombCase][2] = -1;
+                                            AiBombData[bombCase][2] = SHIP_UP; // We put the ship upwards because its rel// avent later
+                                            AiBombData[bombCase][4]++;
                                             guessingOrientation = false; // We know orientation so we don't have to guess any more
                                         }
                                     }
@@ -122,14 +129,54 @@ public class BackEnd {
                                             break; // Ends AIs turn
                                         }
                                         else{
-                                            AiBombData[bombCase][2] = 2; // When the orientation is not vertical must be horizontal
+                                            AiBombData[bombCase][2] = SHIP_RIGHT; // When the orientation is not vertical must be horizontal
                                             guessingOrientation = false;
                                         }
                                     }
                                 }
                             }
                             //################### End of guessing start of bombing
-
+                            else {
+                                switch (AiBombData[bombCase][2]) { // Switches to suitable case
+                                    case SHIP_LEFT:// If ship goes left
+                                        //todo Tee maha case SHIP_RIGHT: asenda plussid miinustage ja AiBombData[bombCase][3] kolm asenda neljaga
+                                    case SHIP_RIGHT: // If ship goes right
+                                        //todo Tee maha case SHIP_UP: asenda y+Ai.. y ja x asenda x+Ai..
+                                    case SHIP_DOWN: // If ship goes Down
+                                        //todo Tee maha case SHIP_UP: asenda plussid miinustage ja AiBombData[bombCase][3] kolm asenda neljaga
+                                    case SHIP_UP: // If ship goes right
+                                        if (MAIN.computerBombs[x][y + AiBombData[bombCase][3]]){ // Have we bombed that place
+                                            if (MAIN.playerShips[x][y + AiBombData[bombCase][3]]){ // If we had a ship
+                                                AiBombData[bombCase][3]++; // extends the ship length to AI
+                                                // Didn't Respond that because it must have been responded before
+                                            }
+                                            else {
+                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1;
+                                            }
+                                        }
+                                        else {
+                                            MAIN.computerBombs[x][y + AiBombData[bombCase][3]] = true; // Bombs next spot
+                                            if (MAIN.playerShips[x][y + AiBombData[bombCase][3]]){
+                                                AiBombData[bombCase][3]++; // Extends ship length to AI
+                                                MAIN.response = RESPONSE_HIT; // Responds Hit
+                                                // finds the ship and increases the bomb count
+                                                MAIN.playerShipData[getShipID(x, y + AiBombData[bombCase][3], MAIN.playerShipData)][4]++;
+                                                // Checks if ship has sunken
+                                                if (hasShipSunk(MAIN.computerBombs, MAIN.playerShipData[getShipID(x, y + AiBombData[bombCase][3], MAIN.playerShipData)])){
+                                                    // Marks ship dead
+                                                    MAIN.playerShipData[getShipID(x, y + AiBombData[bombCase][3], MAIN.playerShipData)][5] = 1;
+                                                    //Responds "Ship is down on the ocean floor"
+                                                    MAIN.response = RESPONSE_DEAD;
+                                                    break; // Ends AIs turn
+                                                }
+                                            }
+                                            else { // If there wasn't a ship it should continue to next direction
+                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1;
+                                                break; // Ends AIs turn
+                                            }
+                                        }
+                                }
+                            }
                         }
 //###########################################  End of Advanced AI  ##################################################
                         else {
@@ -137,7 +184,7 @@ public class BackEnd {
                             AiBombdY = random.nextInt(10);
                             attempts++;
                             if (attempts >= 101) {
-                            break;
+                                break;
                             }// If something goes wrong it will stop the endless loop
                             if (MAIN.computerBombs[AiBombdX][AiBombdY] != true) { // looks if it has bombed that place
                                 MAIN.computerBombs[AiBombdX][AiBombdY] = true; // Marks place to have been bombed
@@ -168,7 +215,7 @@ public class BackEnd {
                             // AI places ships
                             // Gets X and Y for that ship to fit inn the area
                             if (random.nextBoolean()) { // If true ship will be placed horizontally
-                                                        // Otherwise ship will be placed vertically
+                                // Otherwise ship will be placed vertically
                                 AiPlacedX = random.nextInt(10 - SHIPS[i]);
                                 AiPlacedY = random.nextInt(10);
                                 AiPlacedH = 1;
@@ -225,12 +272,12 @@ public class BackEnd {
         return -1;
     }
 
-/**
- *
- *
- * @return Returns a ship that contains given point. If
- *         not found, -1 will be returned.
- */
+    /**
+     *
+     *
+     * @return Returns a ship that contains given point. If
+     *         not found, -1 will be returned.
+     */
     public boolean hasShipSunk(boolean[][] bombs, int[] targetShipData) {
 
         // Bomb counter
