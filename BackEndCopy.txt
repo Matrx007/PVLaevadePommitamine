@@ -143,7 +143,37 @@ public class BackEnd {
                                     case SHIP_RIGHT: // If ship goes right
                                         //todo Tee maha case SHIP_UP: asenda y+Ai.. y ja x asenda x+Ai..
                                     case SHIP_DOWN: // If ship goes Down
-                                        //todo Tee maha case SHIP_UP: asenda plussid miinustage ja AiBombData[bombCase][3] kolm asenda neljaga
+                                        if (MAIN.computerBombs[x][y - AiBombData[bombCase][4]]){ // Have we bombed that place
+                                            if (MAIN.playerShips[x][y - AiBombData[bombCase][4]]){ // If we had a ship
+                                                AiBombData[bombCase][4]++; // extends the ship length to AI
+                                                // Didn't Respond that because it must have been responded before
+                                            }
+                                            else {
+                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1;
+                                            }
+                                        }
+                                        else {
+                                            MAIN.computerBombs[x][y - AiBombData[bombCase][4]] = true; // Bombs next spot
+                                            if (MAIN.playerShips[x][y - AiBombData[bombCase][4]]){
+                                                AiBombData[bombCase][4]++; // Extends ship length to AI
+                                                MAIN.response = RESPONSE_HIT; // Responds Hit
+                                                // finds the ship and increases the bomb count
+                                                MAIN.playerShipData[getShipID(x, y - AiBombData[bombCase][4], MAIN.playerShipData)][4]++;
+                                                // Checks if ship has sunken
+                                                if (hasShipSunk(MAIN.computerBombs, MAIN.playerShipData[getShipID(x, y - AiBombData[bombCase][3], MAIN.playerShipData)])){
+                                                    // Marks ship dead
+                                                    MAIN.playerShipData[getShipID(x, y - AiBombData[bombCase][4], MAIN.playerShipData)][5] = 1;
+                                                    //Responds "Ship is down on the ocean floor"
+                                                    MAIN.response = RESPONSE_DEAD;
+                                                    bombCase++; // Ends cykle
+                                                    // todo Margi umber laeva koik kohad hoivatuks
+                                                }
+                                                break; // Ends AIs turn
+                                            }
+                                            else { // If there wasn't a ship it should continue to next direction
+
+                                            }
+                                        }
                                     case SHIP_UP: // If ship goes right
                                         if (MAIN.computerBombs[x][y + AiBombData[bombCase][3]]){ // Have we bombed that place
                                             if (MAIN.playerShips[x][y + AiBombData[bombCase][3]]){ // If we had a ship
@@ -171,7 +201,7 @@ public class BackEnd {
                                                 }
                                             }
                                             else { // If there wasn't a ship it should continue to next direction
-                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1;
+                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1; // TODO Note see voib tekidada infinet loobi
                                                 break; // Ends AIs turn
                                             }
                                         }
