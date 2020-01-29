@@ -96,9 +96,9 @@ public class BackEnd {
             case ACTION_PLACE_COMPUTER: // Computer's turn
                 if (AiShipsPlaced) { // If true then ships are placed otherwise place ships
                     // TODO Pommitamine
-                    int i = 0; // Variable for while loop
+                    int t = 0; // Variable for while loop
                     int attempts = 0; // To avoid endless loops
-                    while (i != 1) { // to be "stuck" here until it has made the move
+                    while (t != 1) { // to be "stuck" here until it has made the move
 //#################################################   Advanced AI   ####################################################
                         if (AiBombData[bombCase][5] == 1) { // If that case exists
                             int x = AiBombData[bombCase][0]; // Read X coordinate
@@ -139,9 +139,85 @@ public class BackEnd {
                             else {
                                 switch (AiBombData[bombCase][2]) { // Switches to suitable case
                                     case SHIP_LEFT:// If ship goes left
-                                        //todo Tee maha case SHIP_RIGHT: asenda plussid miinustage ja AiBombData[bombCase][3] kolm asenda neljaga
+                                        if (MAIN.computerBombs[x  - AiBombData[bombCase][4]][y]){ // Have we bombed that place
+                                            if (MAIN.playerShips[x  - AiBombData[bombCase][4]][y]){ // If we had a ship
+                                                AiBombData[bombCase][4]++; // extends the ship length to AI
+                                                // Didn't Respond that because it must have been responded before
+                                            }
+                                            else {
+                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1;
+                                            }
+                                        }
+                                        else {
+                                            MAIN.computerBombs[x  + AiBombData[bombCase][4]][y] = true; // Bombs next spot
+                                            if (MAIN.playerShips[x  + AiBombData[bombCase][4]][y]){
+                                                AiBombData[bombCase][4]++; // Extends ship length to AI
+                                                MAIN.response = RESPONSE_HIT; // Responds Hit
+                                                // finds the ship and increases the bomb count
+                                                MAIN.playerShipData[getShipID(x  - AiBombData[bombCase][4], y , MAIN.playerShipData)][4]++;
+                                                // Checks if ship has sunken
+                                                if (hasShipSunk(MAIN.computerBombs, MAIN.playerShipData[getShipID(x  - AiBombData[bombCase][4],y , MAIN.playerShipData)])){
+                                                    // Marks ship dead
+                                                    MAIN.playerShipData[getShipID(x  - AiBombData[bombCase][4], y, MAIN.playerShipData)][5] = 1;
+                                                    //Responds "Ship is down on the ocean floor"
+                                                    MAIN.response = RESPONSE_DEAD;
+                                                    // Following 4 lines of code mark the area around the ship as bombed,
+                                                    // it comes from the rules that ships cant be side by side and have a common corner
+                                                    for(int i = AiBombData[bombCase][0] - 1; i < AiBombData[bombCase][0] +
+                                                            AiBombData[bombCase][3] + AiBombData[bombCase][4] -2 + 1; i++) {
+                                                        for(int j = AiBombData[bombCase][1] - 1; j < AiBombData[bombCase][1] + 1; j++) {
+                                                            MAIN.computerBombs[i][j] = true;
+                                                        }
+                                                    }
+                                                    bombCase++; // Ends cykle
+                                                    break; // Ends AIs turn
+                                                }
+                                            }
+                                            else { // If there wasn't a ship it should continue to next direction
+                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1;
+                                                break; // Ends AIs turn
+                                            }
+                                        }
                                     case SHIP_RIGHT: // If ship goes right
-                                        //todo Tee maha case SHIP_UP: asenda y+Ai.. y ja x asenda x+Ai..
+                                        if (MAIN.computerBombs[x  + AiBombData[bombCase][3]][y]){ // Have we bombed that place
+                                            if (MAIN.playerShips[x  + AiBombData[bombCase][3]][y]){ // If we had a ship
+                                                AiBombData[bombCase][3]++; // extends the ship length to AI
+                                                // Didn't Respond that because it must have been responded before
+                                            }
+                                            else {
+                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1;
+                                            }
+                                        }
+                                        else {
+                                            MAIN.computerBombs[x  + AiBombData[bombCase][3]][y] = true; // Bombs next spot
+                                            if (MAIN.playerShips[x  + AiBombData[bombCase][3]][y]){
+                                                AiBombData[bombCase][3]++; // Extends ship length to AI
+                                                MAIN.response = RESPONSE_HIT; // Responds Hit
+                                                // finds the ship and increases the bomb count
+                                                MAIN.playerShipData[getShipID(x  + AiBombData[bombCase][3], y , MAIN.playerShipData)][4]++;
+                                                // Checks if ship has sunken
+                                                if (hasShipSunk(MAIN.computerBombs, MAIN.playerShipData[getShipID(x  + AiBombData[bombCase][4],y , MAIN.playerShipData)])){
+                                                    // Marks ship dead
+                                                    MAIN.playerShipData[getShipID(x  + AiBombData[bombCase][3], y, MAIN.playerShipData)][5] = 1;
+                                                    //Responds "Ship is down on the ocean floor"
+                                                    MAIN.response = RESPONSE_DEAD;
+                                                    // Following 4 lines of code mark the area around the ship as bombed,
+                                                    // it comes from the rules that ships cant be side by side and have a common corner
+                                                    for(int i = AiBombData[bombCase][0] - 1; i < AiBombData[bombCase][0] +
+                                                            AiBombData[bombCase][3] + AiBombData[bombCase][4] -2 + 1; i++) {
+                                                        for(int j = AiBombData[bombCase][1] - 1; j < AiBombData[bombCase][1] + 1; j++) {
+                                                            MAIN.computerBombs[i][j] = true;
+                                                        }
+                                                    }
+                                                    bombCase++; // Ends cykle
+                                                    break; // Ends AIs turn
+                                                }
+                                            }
+                                            else { // If there wasn't a ship it should continue to next direction
+                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1;
+                                                break; // Ends AIs turn
+                                            }
+                                        }
                                     case SHIP_DOWN: // If ship goes Down
                                         if (MAIN.computerBombs[x][y - AiBombData[bombCase][4]]){ // Have we bombed that place
                                             if (MAIN.playerShips[x][y - AiBombData[bombCase][4]]){ // If we had a ship
@@ -165,13 +241,21 @@ public class BackEnd {
                                                     MAIN.playerShipData[getShipID(x, y - AiBombData[bombCase][4], MAIN.playerShipData)][5] = 1;
                                                     //Responds "Ship is down on the ocean floor"
                                                     MAIN.response = RESPONSE_DEAD;
+                                                    // Following 4 lines of code mark the area around the ship as bombed,
+                                                    // it comes from the rules that ships cant be side by side and have a common corner
+                                                    for(int i = AiBombData[bombCase][0] - 1; i < AiBombData[bombCase][0] + 1; i++) {
+                                                        for(int j = AiBombData[bombCase][1] - 1; j < AiBombData[bombCase][1] +
+                                                                AiBombData[bombCase][3] + AiBombData[bombCase][4] -2 + 1; j++) {
+                                                            MAIN.computerBombs[i][j] = true;
+                                                        }
+                                                    }
                                                     bombCase++; // Ends cykle
                                                     // todo Margi umber laeva koik kohad hoivatuks
+                                                    break; // Ends AIs turn
                                                 }
-                                                break; // Ends AIs turn
                                             }
                                             else { // If there wasn't a ship it should continue to next direction
-
+                                                MAIN.error = ERROR_UNKNOWN;
                                             }
                                         }
                                     case SHIP_UP: // If ship goes right
@@ -197,11 +281,18 @@ public class BackEnd {
                                                     MAIN.playerShipData[getShipID(x, y + AiBombData[bombCase][3], MAIN.playerShipData)][5] = 1;
                                                     //Responds "Ship is down on the ocean floor"
                                                     MAIN.response = RESPONSE_DEAD;
+                                                    for(int i = AiBombData[bombCase][0] - 1; i < AiBombData[bombCase][0] + 1; i++) {
+                                                        for(int j = AiBombData[bombCase][1] - 1; j < AiBombData[bombCase][1] +
+                                                                AiBombData[bombCase][3] + AiBombData[bombCase][4] -2 + 1; j++) {
+                                                            MAIN.computerBombs[i][j] = true;
+                                                        }
+                                                    }
+                                                    bombCase++; // Ends cykle
                                                     break; // Ends AIs turn
                                                 }
                                             }
                                             else { // If there wasn't a ship it should continue to next direction
-                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1; // TODO Note see voib tekidada infinet loobi
+                                                AiBombData[bombCase][2] = AiBombData[bombCase][2] * -1;
                                                 break; // Ends AIs turn
                                             }
                                         }
@@ -233,7 +324,7 @@ public class BackEnd {
                                         MAIN.response = RESPONSE_DEAD;
                                     }
                                 }
-                                i++; // One of the conditsions for this loop, so that AI has to make a move and retry if it failed
+                                t++; // One of the conditsions for this loop, so that AI has to make a move and retry if it failed
                             }
                         }
                     }
