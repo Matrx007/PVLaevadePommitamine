@@ -5,6 +5,7 @@ import com.ydgames.mxe.GameContainer;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
+import java.util.Arrays;
 import java.util.SplittableRandom;
 
 /**
@@ -26,6 +27,9 @@ public class FrontEnd extends GameContainer {
     private int boardTileGap = 8;
     private float boardOffsetX;  // Calculated automatically
     private float boardOffsetY; // Calculated automatically
+
+    // ### RESOURCES ###
+    private ImageManager imageManager;
     
     // ### GAME DATA ###
     private BackEnd backEnd;
@@ -102,18 +106,22 @@ public class FrontEnd extends GameContainer {
     
     @Override
     public void setup() {
+
+        // ### GAME ###
         game = getGame();
-        
+
+        // ### GAME LOGIC ¤¤¤
         backEnd = new BackEnd();
-        
+
         random = new SplittableRandom();
-        
+
+        // ### RENDERING ####
         screenBuffer = game.createGraphics(game.pixelWidth, game.pixelHeight, RENDERER);
         
         boardOffsetX = (game.pixelWidth - boardTileW * 10 - boardTileGap * 9) / 2f;
         boardOffsetY = (game.pixelHeight - boardTileH * 10 - boardTileGap * 9) / 2f;
         
-        // ### GAME ###
+        // ### UI ###
         playerGrid = new PlayerGrid(
                 64, 64,
                 48, 48, 8, playerShips
@@ -122,6 +130,11 @@ public class FrontEnd extends GameContainer {
                 64 + 64 + (48 + 8) * 10, 64,
                 48, 48, 8, playerBombs
         );
+
+        // ### RESOURCES ###
+        imageManager = new ImageManager(game);
+
+        imageManager.addToQueue("ships", "/res/ships.png");
     }
     
     @Override
@@ -533,19 +546,21 @@ screenBuffer.rect(
             
             // If placing a ship, change
             // placingShipX and placeShipY to mouse's location
+            placingShip = placingShipID < 5;
+
             if (placingShip) {
                 placingShipX = mouseSlotX;
                 placingShipY = mouseSlotY;
-                placingShipW = guideShipOrientation ? SHIPS[placingShipID] : 0;
-                placingShipH = guideShipOrientation ? 0 : SHIPS[placingShipID];
+                placingShipW = guideShipOrientation ? SHIPS[placingShipID] : 1;
+                placingShipH = guideShipOrientation ? 1 : SHIPS[placingShipID];
             }
-            
+
             // Place a ship when left clicked on the board
             if(placingShip) {
                 if(game.input.isButtonDown(PConstants.LEFT)) {
                     
                     // If mouse is inside the boundaries
-                    if(mouseSlotX != -1 || mouseSlotY != -1) {
+                    if(mouseSlotX != -1 && mouseSlotY != -1) {
                         
                         // Variable which tells if the boat can be placed there
                         boolean correctPlacement = isSpaceAroundFree(
@@ -559,7 +574,6 @@ screenBuffer.rect(
     
                         // If it is legal to place the boat there proceed
                         if (correctPlacement) {
-                            placingShipID++;
                             
                             // Add the ship to the list of ships
                             playerShipData[placingShipID] = new int[]{
@@ -570,8 +584,7 @@ screenBuffer.rect(
                                     0,
                                     0
                             };
-                            placingShipID++;
-                            
+
                             // For each point in the ship mark the square as taken
                             for (int i = placingShipX; i < placingShipX + placingShipW; i++) {
                                 for (int j = placingShipY; j < placingShipY + placingShipH; j++) {
@@ -580,6 +593,9 @@ screenBuffer.rect(
                                     }
                                 }
                             }
+
+                            // Move onto the next ship
+                            placingShipID++;
                         }
                     }
                 }
@@ -588,18 +604,19 @@ screenBuffer.rect(
         
         public void render() {
             screenBuffer.noStroke();
-    
+
+            System.out.println("De-bug-ing");
             // Draw ships
             for (int i = 0; i < playerShipData.length; i++) {
-        
+
                 // If ship's width is equal to zero, this ship the nor the
                 // next ones exist so we will exit the loop
-                if (playerShipData[i][2] == 0) {
+                if (playerShipData[i][2] == 0 && playerShipData[i][3] == 0) {
                     break;
                 }
-        
+
                 // This ship exists, so let's draw it
-                screenBuffer.fill(0, 0, 0);
+                screenBuffer.fill(0, 0, 0, 255);
                 screenBuffer.rect(
                         this.boardOffsetX + playerShipData[i][0] * (this.boardTileW + this.boardTileGap),
                         this.boardOffsetY + playerShipData[i][1] * (this.boardTileH + this.boardTileGap),
@@ -621,7 +638,7 @@ screenBuffer.rect(
                     
                     // If the given array contains tru at [i, j],
                     // make the square fully opaque
-                    if (computerShips[i][j]) {
+                    if (playerShips[i][j]) {
                         alpha = 255;
                     }
                     
@@ -645,8 +662,8 @@ screenBuffer.rect(
             if (placingShip) {
                 screenBuffer.fill(collision ? 192 : 0, 0, 0, collision ? 192 : 64);
                 screenBuffer.rect(
-                        this.boardOffsetX + mouseSlotX * (this.boardTileW + this.boardTileGap),
-                        this.boardOffsetY + mouseSlotY * (this.boardTileH + this.boardTileGap),
+                        this.boardOffsetX + placingShipX * (this.boardTileW + this.boardTileGap),
+                        this.boardOffsetY + placingShipY * (this.boardTileH + this.boardTileGap),
                         (this.boardTileW + this.boardTileGap) * placingShipW - boardTileGap,
                         (this.boardTileH + this.boardTileGap) * placingShipH - boardTileGap
                 );

@@ -9,6 +9,7 @@ import static com.meietiim.pvlaevadepommitamine.FrontEnd.*;
  * @author Gregor Suurvarik
  */
 public class BackEnd {
+    /*
     // Makes code shorter because Gregor is lazy
     int playerPlaceShipX = MAIN.playerPlaceShipX;
     int playerPlaceShipY = MAIN.playerPlaceShipY;
@@ -177,5 +178,6 @@ public class BackEnd {
                 }
                 break;
         }
-    }
+    }*/
+
 }
