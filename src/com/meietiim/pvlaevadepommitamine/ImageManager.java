@@ -30,6 +30,23 @@ public class ImageManager {
         requestedImages = new ArrayList<>();
         loadedImages = new HashMap<>();
     }
+    
+    public PImage loadImmediately(String nickname, String file) {
+        
+        // Read the image
+        PImage loadedImage = game.loadImage(file);
+        
+        // If image failed to load, return null
+        if(loadedImage == null) {
+            return null;
+        }
+        
+        // Image loaded successfully, now store it
+        loadedImages.put(nickname, loadedImage);
+        
+        // Return the loaded image
+        return loadedImage;
+    }
 
     public void loadRequestedImages() {
         for(String[] image : requestedImages) {
@@ -59,5 +76,9 @@ public class ImageManager {
 
     public void addToQueue(String image, String file) {
         requestedImages.add(new String[]{image, file});
+    }
+
+    public void addImage(String nickname, PImage image) {
+        loadedImages.put(nickname, image);
     }
 }

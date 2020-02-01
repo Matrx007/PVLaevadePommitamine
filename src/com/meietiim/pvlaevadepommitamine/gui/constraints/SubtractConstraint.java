@@ -1,9 +1,9 @@
-package com.meietiim.pvlaevadepommitamine.gui;
+package com.meietiim.pvlaevadepommitamine.gui.constraints;
 
-public class SumConstraint extends Constraint {
+public class SubtractConstraint extends Constraint {
     private Constraint[] sourceConstraints;
 
-    public SumConstraint(Constraint... constraints) {
+    public SubtractConstraint(Constraint... constraints) {
         this.sourceConstraints = constraints;
     }
 
@@ -12,7 +12,7 @@ public class SumConstraint extends Constraint {
         float value = 0;
 
         for(Constraint constraint : sourceConstraints) {
-            value += constraint.calculate();
+            value -= constraint.calculate();
         }
 
         return value;

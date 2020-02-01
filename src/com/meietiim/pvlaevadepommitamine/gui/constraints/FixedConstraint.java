@@ -1,4 +1,4 @@
-package com.meietiim.pvlaevadepommitamine.gui;
+package com.meietiim.pvlaevadepommitamine.gui.constraints;
 
 public class FixedConstraint extends Constraint {
 
