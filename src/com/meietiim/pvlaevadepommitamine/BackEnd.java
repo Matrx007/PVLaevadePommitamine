@@ -60,11 +60,11 @@ public class BackEnd {
                 // Ship is placed correctly, add the changes to board's state
                 if (correctPlacement) {
                     // Add the new ship to playerShipData
-                    MAIN.playerShipData[MAIN.nextShipID] = new int[]{
+                    MAIN.playerShipData[MAIN.placingShipID] = new int[]{
                             playerPlaceShipX, playerPlaceShipY,
                             playerPlaceShipW, playerPlaceShipH,
                             0, 0};
-                    MAIN.nextShipID++;
+                    MAIN.placingShipID++;
 
                     // Add each piece onto playerShips[][]
                     for (int x = playerPlaceShipX; x < playerPlaceShipX + playerPlaceShipW - 1; x++) {
@@ -163,7 +163,9 @@ public class BackEnd {
                                                     for (int i = AiBombData[bombCase][0] - 1; i < AiBombData[bombCase][0] +
                                                             AiBombData[bombCase][3] + AiBombData[bombCase][4] - 2 + 1; i++) {
                                                         for (int j = AiBombData[bombCase][1] - 1; j < AiBombData[bombCase][1] + 1; j++) {
-                                                            MAIN.computerBombs[i][j] = true;
+                                                            if (i >= 0 && i <= 9 && j >= 0 && j <= 9) {
+                                                                MAIN.computerBombs[i][j] = true;
+                                                            }
                                                         }
                                                     }
                                                     bombCase++; // Ends cycle
@@ -203,7 +205,9 @@ public class BackEnd {
                                                     for (int i = AiBombData[bombCase][0] - 1; i < AiBombData[bombCase][0] +
                                                             AiBombData[bombCase][3] + AiBombData[bombCase][4] - 2 + 1; i++) {
                                                         for (int j = AiBombData[bombCase][1] - 1; j < AiBombData[bombCase][1] + 1; j++) {
-                                                            MAIN.computerBombs[i][j] = true;
+                                                            if (i >= 0 && i <= 9 && j >= 0 && j <= 9) {
+                                                                MAIN.computerBombs[i][j] = true;
+                                                            }
                                                         }
                                                     }
                                                     bombCase++; // Ends cycle
@@ -243,7 +247,9 @@ public class BackEnd {
                                                     for (int i = AiBombData[bombCase][0] - 1; i < AiBombData[bombCase][0] + 1; i++) {
                                                         for (int j = AiBombData[bombCase][1] - 1; j < AiBombData[bombCase][1] +
                                                                 AiBombData[bombCase][3] + AiBombData[bombCase][4] - 2 + 1; j++) {
-                                                            MAIN.computerBombs[i][j] = true;
+                                                            if (i >= 0 && i <= 9 && j >= 0 && j <= 9) {
+                                                                MAIN.computerBombs[i][j] = true;
+                                                            }
                                                         }
                                                     }
                                                     bombCase++; // Ends cycle
@@ -280,7 +286,9 @@ public class BackEnd {
                                                     for (int i = AiBombData[bombCase][0] - 1; i < AiBombData[bombCase][0] + 1; i++) {
                                                         for (int j = AiBombData[bombCase][1] - 1; j < AiBombData[bombCase][1] +
                                                                 AiBombData[bombCase][3] + AiBombData[bombCase][4] - 2 + 1; j++) {
-                                                            MAIN.computerBombs[i][j] = true;
+                                                            if (i >= 0 && i <= 9 && j >= 0 && j <= 9) {
+                                                                MAIN.computerBombs[i][j] = true;
+                                                            }
                                                         }
                                                     }
                                                     bombCase++; // Ends cycle
@@ -343,7 +351,7 @@ public class BackEnd {
                                 AiPlacedW = 1;
                             }
                             // Check if ship fits
-                            if (MAIN.isSpaceFree(AiPlacedX, AiPlacedY, AiPlacedW, AiPlacedH, MAIN.computerShips)) {
+                            if (MAIN.isSpaceAroundFree(AiPlacedX, AiPlacedY, AiPlacedW, AiPlacedH, MAIN.computerShips)) {
                                 for (int x = AiPlacedX; x <= AiPlacedX + AiPlacedW - 1; x++) {
                                     for (int y = AiPlacedY; y <= AiPlacedY + AiPlacedH - 1; y++) {
                                         MAIN.computerShips[x][y] = true;
