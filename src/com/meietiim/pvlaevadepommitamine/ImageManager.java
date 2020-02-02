@@ -46,7 +46,7 @@ public class ImageManager {
     public PImage loadImmediately(String nickname, String file) {
         
         // Read the image
-        PImage loadedImage = game.loadImage(file);
+        PImage loadedImage = game.loadImage(FILE_PATH_BEGINNING+file);
         
         // If image failed to load, return null
         if(loadedImage == null) {
@@ -64,7 +64,7 @@ public class ImageManager {
         for(String[] image : requestedImages) {
 
             // Attempt to read the image
-            PImage loadedImage = game.loadImage(image[1]);
+            PImage loadedImage = game.loadImage(FILE_PATH_BEGINNING+image[1]);
 
             // If image fails to load, print an error and skip to next one
             if(loadedImage == null) {
