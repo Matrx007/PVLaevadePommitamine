@@ -1,5 +1,6 @@
 package com.meietiim.pvlaevadepommitamine;
 
+import java.util.Arrays;
 import java.util.SplittableRandom;
 
 import static com.meietiim.pvlaevadepommitamine.FrontEnd.*;
@@ -415,40 +416,53 @@ public class BackEnd {
                 
                 // Places all required ships in one function call.
                 
-                int t = 0;
-                while (t < MAIN.computerShipData.length) {
+                int attempts;
+                for (int t = 0; t < MAIN.computerShipData.length; t++) {
+                    
+                    // If the ship doesn't exist
                     if (MAIN.computerShipData[t][3] == 0) {
-                        // AI places ships
-                        // Gets X and Y for that ship to fit inn the area
-                        if (random.nextBoolean()) { // If true ship will be placed horizontally
-                            // Otherwise ship will be placed vertically
-                            AiPlacedX = random.nextInt(10 - SHIPS[t]);
-                            AiPlacedY = random.nextInt(10);
-                            AiPlacedH = 1;
-                            AiPlacedW = SHIPS[t];
-                        } else {
-                            AiPlacedX = random.nextInt(10);
-                            AiPlacedY = random.nextInt(10 - SHIPS[t]);
-                            AiPlacedH = SHIPS[t];
-                            AiPlacedW = 1;
+                        attempts = 0;
+                        
+                        do {
+                            // Count attempts
+                            attempts++;
+                            
+                            // Attempts to place a ship in a random spot
+                            if (random.nextBoolean()) {
+                                // The ship will placed horizontally
+                                AiPlacedX = random.nextInt(10 - SHIPS[t]);
+                                AiPlacedY = random.nextInt(10);
+                                AiPlacedW = SHIPS[t];
+                                AiPlacedH = 1;
+                            } else {
+                                // The ship will be placed vertically
+                                AiPlacedX = random.nextInt(10);
+                                AiPlacedY = random.nextInt(10 - SHIPS[t]);
+                                AiPlacedW = 1;
+                                AiPlacedH = SHIPS[t];
+                            }
+                            
+                            // If the spot is not free, find another one,
+                            // cap it to 100 attempts per ship
+                        } while (!MAIN.isSpaceAroundFree(AiPlacedX, AiPlacedY,
+                                AiPlacedW, AiPlacedH, MAIN.computerShips) &&
+                                attempts < 100);
+                        
+                        if(attempts >= 100) {
+                            // Too many attempts, return an error
+                            MAIN.error = ERROR_NO_FREE_SPOT;
                         }
-                        // Check if ship fits
-                        if (MAIN.isSpaceAroundFree(AiPlacedX, AiPlacedY, AiPlacedW, AiPlacedH, MAIN.computerShips)) {
-                            for (int x = AiPlacedX; x <= AiPlacedX + AiPlacedW - 1; x++) {
-                                for (int y = AiPlacedY; y <= AiPlacedY + AiPlacedH - 1; y++) {
-                                    MAIN.computerShips[x][y] = true;
-                                }
-                            } // Adds ships to computerShipData
-                            MAIN.computerShipData[t] = new int[]{AiPlacedX, AiPlacedY,
-                                    AiPlacedW, AiPlacedH, 0, 0};
-                            t++; // tells to to next ship
+                        
+                        // Place the new ship
+                        for (int x = AiPlacedX; x < AiPlacedX + AiPlacedW; x++) {
+                            for (int y = AiPlacedY; y < AiPlacedY + AiPlacedH; y++) {
+                                MAIN.computerShips[x][y] = true;
+                            }
                         }
-                        //If all ships are placed it marks placing ships done
-                        if (t == 5) {
-                            AiShipsPlaced = true;
-                        }
-                    } else { // If ship exists then moves to another ship
-                        t++;
+    
+                        // Place the new ship
+                        MAIN.computerShipData[t] = new int[]{AiPlacedX, AiPlacedY,
+                                AiPlacedW, AiPlacedH, 0, 0};
                     }
                 }
                 break;
