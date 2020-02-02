@@ -155,25 +155,6 @@ public class FrontEnd extends GameContainer {
                 "attackedSquare", "/res/attackedSquare.png");
         imageManager.loadImmediately(
                 "attackedSquareInverse", "/res/attackedSquareInverse.png");
-        
-        // ### TESTING ###
-//        for(int i = 0; i < playerBombs.length; i++) {
-//            for(int j = 0; j < playerBombs[0].length; j++) {
-//                playerBombs[i][j] = random.nextBoolean();
-//                computerBombs[i][j] = random.nextBoolean();
-//            }
-//        }
-        
-        // Load individual ships
-    
-        /*imageManager.addImage("ship5", shipImageSheet.get(160, 692, 54, 150));
-        imageManager.addImage("ship5broken", shipImageSheet.get(0, 692, 54, 150));
-        
-        imageManager.addImage("ship3", shipImageSheet.get(555, 666, 50, 160));
-        imageManager.addImage("ship3broken", shipImageSheet.get(555, 666, 50, 160));
-        
-        imageManager.addImage("ship2", shipImageSheet.get(522, 472, 44, 86));
-        imageManager.addImage("ship2broken", shipImageSheet.get(476, 472, 44, 86));*/
     }
     
     @Override
@@ -207,15 +188,6 @@ public class FrontEnd extends GameContainer {
         action = ACTION_UNKNOWN;
         error = ERROR_NONE;
         response = RESPONSE_EMPTY;
-    
-        /*System.out.println("================");
-        for(int i = 0; i < playerShipData.length; i++) {
-            System.out.print("\n "+i+": ");
-            for(int j = 0; j < playerShipData[i].length; j++) {
-                System.out.print(" "+playerShipData[i][j]);
-            }
-        }
-        System.out.println("\n================");*/
     
         System.out.println(gameState);
         
@@ -301,24 +273,32 @@ public class FrontEnd extends GameContainer {
                 
                 // Place a bomb where the mouse is, but only if
                 // the mouse is inside the board
-                if(computerGrid.mouseSlotX != -1 &&
-                        computerGrid.mouseSlotY != -1) {
-                    playerPlaceBombX = computerGrid.mouseSlotX;
-                    playerPlaceBombY = computerGrid.mouseSlotY;
-                    
-                    // And finally call the BackEnd
-                    backEnd.update();
-    
-                    // Read the response
-                    if(response == RESPONSE_HIT) {
-                        // If player hit a ship, give the player a new turn
-                        gameState = STATE_PLAYER_PLACING_BOMBS;
-                    } else if(response == RESPONSE_EMPTY) {
-                        // If no response, it's computer's turn
-                        gameState = STATE_COMPUTER_PLACING_BOMBS;
+                if(game.input.isButtonDown(PConstants.LEFT)) {
+                    if (computerGrid.mouseSlotX != -1 &&
+                            computerGrid.mouseSlotY != -1) {
+                        playerPlaceBombX = computerGrid.mouseSlotX;
+                        playerPlaceBombY = computerGrid.mouseSlotY;
+        
+                        // And finally call the BackEnd
+                        backEnd.update();
+                        
+                        // Read the errors
+                        if(error == ERROR_INCORRECT_PLACEMENT) {
+                            gameState = STATE_PLAYER_PLACING_BOMBS;
+                            break;
+                        }
+        
+                        // Read the response
+                        if (response == RESPONSE_HIT) {
+                            // If player hit a ship, give the player a new turn
+                            gameState = STATE_PLAYER_PLACING_BOMBS;
+                        } else if (response == RESPONSE_EMPTY) {
+                            // If no response, it's computer's turn
+                            gameState = STATE_COMPUTER_PLACING_BOMBS;
+                        }
+        
+                        // TODO: Show error
                     }
-                    
-                    // TODO: Show error
                 }
                 
                 break;
@@ -353,63 +333,9 @@ public class FrontEnd extends GameContainer {
         screenBuffer.fill(66, 164, 245);
         screenBuffer.noStroke();
         screenBuffer.rect(0, 0, game.pixelWidth, game.pixelHeight);
-
-/*screenBuffer.noStroke();
-for(int i = 0; i < 10; i++) {
-for(int j = 0; j < 10; j++) {
-float alpha = 32;
-
-alpha = mouseSlotX == i && mouseSlotY == j ? 64 : alpha;
-if(computerShips[i][j]) {
-alpha = 255;
-}
-
-if(nextShipID < 5) {
-if (i >= mouseSlotX && j >= mouseSlotY &&
-i < mouseSlotX + (guideShipOrientation ? SHIPS[nextShipID] : 1) &&
-j < mouseSlotY + (guideShipOrientation ? 1 : SHIPS[nextShipID])) {
-alpha = 0;
-}
-}
-
-screenBuffer.fill(0, 0, 0, alpha);
-screenBuffer.rect(boardOffsetX + (boardTileW + boardTileGap) * i,
-boardOffsetY + (boardTileH + boardTileGap) * j,
-boardTileW, boardTileH);
-}
-}
-
-// Draw ships
-screenBuffer.fill(0, 0, 0);
-screenBuffer.noStroke();
-
-// Draw ships
-for(int i = 0; i < playerShipData.length; i++) {
-// Check weather this ship exists by checking if it's width is 0
-if(playerShipData[i][2] == 0) continue;
-
-// Draw a black rectangle as the ship
-screenBuffer.rect(
-boardOffsetX + playerShipData[i][0] * (boardTileW + boardTileGap),
-boardOffsetY + playerShipData[i][1] * (boardTileH + boardTileGap),
-(boardTileW + boardTileGap) * playerShipData[i][2] - boardTileGap,
-(boardTileH + boardTileGap) * playerShipData[i][3] - boardTileGap
-);
-}*/
         
         playerGrid.render();
         computerGrid.render();
-        
-        // Ship placing guide
-/*if(nextShipID < 5) {
-screenBuffer.fill(collision ? 192 : 0, 0, 0, collision ? 192 : 64);
-screenBuffer.rect(
-64 + mouseSlotX * (boardTileW + boardTileGap),
-64 + mouseSlotY * (boardTileH + boardTileGap),
-(boardTileW + boardTileGap) * (guideShipOrientation ? guideShipW : 1) - boardTileGap,
-(boardTileH + boardTileGap) * (guideShipOrientation ? 1 : guideShipH) - boardTileGap
-);
-}*/
         
         screenBuffer.endDraw();
         
@@ -633,22 +559,6 @@ screenBuffer.rect(
         
         public void update() {
             super.update();
-    
-            /*placingShip = false;
-            if (placingShipID < 5) {
-                // Make the guide ship visible
-                placingShip = true;
-        
-                // Calculate the width and height of the ship
-                int dimension = SHIPS[placingShipID];
-                if (guideShipOrientation) {
-                    placingShipW = dimension;
-                    placingShipH = 1;
-                } else {
-                    placingShipW = 1;
-                    placingShipH = dimension;
-                }
-            }*/
             
             // If placing a ship, change
             // placingShipX and placeShipY to mouse's location
@@ -660,52 +570,6 @@ screenBuffer.rect(
                 placingShipW = guideShipOrientation ? SHIPS[placingShipID] : 1;
                 placingShipH = guideShipOrientation ? 1 : SHIPS[placingShipID];
             }
-
-            /*// Place a ship when left clicked on the board
-            if(placingShip) {
-                if(game.input.isButtonDown(PConstants.LEFT)) {
-                    
-                    // If mouse is inside the boundaries
-                    if(mouseSlotX != -1 && mouseSlotY != -1) {
-                        
-                        // Variable which tells if the boat can be placed there
-                        boolean correctPlacement = isSpaceAroundFree(
-                                placingShipX,
-                                placingShipY,
-                                placingShipW,
-                                placingShipH,
-                                playerShips
-                        );
-    
-    
-                        // If it is legal to place the boat there proceed
-                        if (correctPlacement) {
-                            
-                            // Add the ship to the list of ships
-                            playerShipData[placingShipID] = new int[]{
-                                    placingShipX,
-                                    placingShipY,
-                                    placingShipW,
-                                    placingShipH,
-                                    0,
-                                    0
-                            };
-
-                            // For each point in the ship mark the square as taken
-                            for (int i = placingShipX; i < placingShipX + placingShipW; i++) {
-                                for (int j = placingShipY; j < placingShipY + placingShipH; j++) {
-                                    if (i >= 0 && j >= 0 && i < 10 && j < 10) {
-                                        playerShips[i][j] = true;
-                                    }
-                                }
-                            }
-
-                            // Move onto the next ship
-                            placingShipID++;
-                        }
-                    }
-                }
-            }*/
         }
         
         public void render() {
@@ -719,26 +583,6 @@ screenBuffer.rect(
                 if (playerShipData[i][2] == 0 && playerShipData[i][3] == 0) {
                     break;
                 }
-
-                /*int shipLength = Math.max(playerShipData[i][2], playerShipData[i][3]);
-                float x, y;
-                switch (shipLength) {
-                    case 5:
-                        x = this.boardOffsetX + playerShipData[i][0] * (this.boardTileW + this.boardTileGap);
-                        y = this.boardOffsetY + playerShipData[i][1] * (this.boardTileH + this.boardTileGap);
-                        screenBuffer.image(imageManager.getImage("ship5"), x, y);
-                        break;
-                    case 3:
-                        x = this.boardOffsetX + playerShipData[i][0] * (this.boardTileW + this.boardTileGap);
-                        y = this.boardOffsetY + playerShipData[i][1] * (this.boardTileH + this.boardTileGap);
-                        screenBuffer.image(imageManager.getImage("ship3"), x, y);
-                        break;
-                    case 2:
-                        x = this.boardOffsetX + playerShipData[i][0] * (this.boardTileW + this.boardTileGap);
-                        y = this.boardOffsetY + playerShipData[i][1] * (this.boardTileH + this.boardTileGap);
-                        screenBuffer.image(imageManager.getImage("ship2"), x, y);
-                        break;
-                }*/
                 
                 // This ship exists, so let's draw it
                 screenBuffer.fill(0, 0, 0, 255);
@@ -830,48 +674,4 @@ screenBuffer.rect(
         // Start our game
         Game.createGame(1280, 720, MAIN, 60f, RENDERER);
     }
-
-/*
-*
-* if(game.input.isButtonDown(PConstants.LEFT)) {
-action = 0;
-playerPlaceShipX = mouseSlotX;
-playerPlaceShipY = mouseSlotY;
-
-int dimension = random.nextInt(3)+1;
-if(random.nextBoolean()) {
-playerPlaceShipW = dimension;
-playerPlaceShipH = 1;
-} else {
-playerPlaceShipW = 1;
-playerPlaceShipH = dimension;
-}
-
-for(int i = playerPlaceShipX; i < playerPlaceShipX+playerPlaceShipW; i++) {
-for(int j = playerPlaceShipY; j < playerPlaceShipY+playerPlaceShipH; j++) {
-if(i > 0 && j > 0 && i < 10 && j < 10) playerShips[i][j] = true;
-}
-}
-
-backEnd.update();
-}
-*
-* */
-
-
-
-/*for (int i = 0; i < playerShipData.length; i++) {
-// Check collision
-if (shipOverlap(shipX1,
-shipY1,
-shipX2,
-shipY2,
-playerShipData[i][0],
-playerShipData[i][1],
-playerShipData[i][0] + playerShipData[i][2],
-playerShipData[i][1] + playerShipData[i][3])) {
-collision = true;
-break;
-}
-}*/
 }
