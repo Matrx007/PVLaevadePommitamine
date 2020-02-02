@@ -12,6 +12,18 @@ import processing.core.PImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 public class ImageManager {
+    
+    static {
+        String osName = System.getProperty("os.name");
+        
+        if(osName.contains("Windows")) {
+            FILE_PATH_BEGINNING = "";
+        } else {
+            FILE_PATH_BEGINNING = "/";
+        }
+    }
+    
+    private static final String FILE_PATH_BEGINNING;
 
     // Store 'Game' in order to load images with built'in methods
     private Game game;
