@@ -43,15 +43,20 @@ public class BackEnd {
     private SplittableRandom random = new SplittableRandom();
 
     public void update() {
+        playerPlaceShipX = MAIN.playerPlaceShipX;
+        playerPlaceShipY = MAIN.playerPlaceShipY;
+        playerPlaceShipH = MAIN.playerPlaceShipH;
+        playerPlaceShipW = MAIN.playerPlaceShipW;
+        playerPlacedBombX = MAIN.playerPlaceBombX;
+        playerPlacedBombY = MAIN.playerPlaceBombY;
         MAIN.response = RESPONSE_EMPTY;
         MAIN.error = ERROR_NONE;
         switch (MAIN.action) {
             case ACTION_PLAYER_PLACE_SHIP: // Player placed a ship
                 // Store placed ship in playerShip
-                
+                System.out.println("Panen laeva");
                 // Continue if the ship's ID is valid
                 if(MAIN.placingShipID == -1) break;
-    
                 // Check if a ship can fit there
                 boolean correctPlacement = MAIN.isSpaceAroundFree(
                         playerPlaceShipX,
@@ -75,6 +80,7 @@ public class BackEnd {
                     for (int x = playerPlaceShipX; x < playerPlaceShipX + playerPlaceShipW - 1; x++) {
                         for (int y = playerPlaceShipY; y < playerPlaceShipY + playerPlaceShipH - 1; y++) {
                             MAIN.playerShips[x][y] = true;
+                            System.out.println(x);
                         }
                     }
     
@@ -82,6 +88,7 @@ public class BackEnd {
                     MAIN.placingShipID++;
                 } else {
                     // Ship is placed incorrectly
+                    System.out.println("Falce placment");
                     MAIN.error = ERROR_INCORRECT_PLACEMENT;
                 }
                 break;
@@ -351,7 +358,7 @@ public class BackEnd {
                     // Bomb's initial location
                     AiBombX = random.nextInt(10);
                     AiBombY = random.nextInt(10);
-                    
+                    System.out.println("Bombing gregors area");
                     // Search a for free spot, id necessary
                     int attempts = 0;
                     while (MAIN.computerBombs[AiBombX][AiBombY]) {
@@ -370,20 +377,23 @@ public class BackEnd {
                             return;
                         }
                     }
-                    
+                    System.out.println("==============");
+                    for(int i = 0; i < MAIN.playerShips.length; i++) {
+                        System.out.println(Arrays.toString(MAIN.playerShips[i]));
+                    }
+                    System.out.println("==============");
                     // Plant a bomb
                     MAIN.computerBombs[AiBombX][AiBombY] = true;
-
                     // If the bomb hit a player
                     if (MAIN.playerShips[AiBombX][AiBombY]) {
-
+                        System.out.println("Pihtas");
                         // Set the corresponding respond
                         MAIN.response = RESPONSE_HIT;
 
                         // Store X and Y for next turn
                         AiBombData[bombCase][0] = AiBombX;
                         AiBombData[bombCase][1] = AiBombY;
-
+                        AiBombData[bombCase][5] = 1;
                         // Go into orientation checking mode
                         guessingOrientation = true;
                         
