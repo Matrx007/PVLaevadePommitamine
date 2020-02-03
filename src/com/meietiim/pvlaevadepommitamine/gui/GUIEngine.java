@@ -5,6 +5,7 @@ import com.ydgames.mxe.Game;
 import processing.core.PGraphics;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GUIEngine {
     
@@ -21,16 +22,20 @@ public class GUIEngine {
     // The current and previous dimensions of drawingSurface
     public int width, previousWidth;
     public int height, previousHeight;
-    
-    // ### COMPONENTS ###
-    
-    // All components currently in the scene
-    private ArrayList<GUIComponent> components;
-    // Component add queue
-    private ArrayList<GUIComponent> componentsAdd;
-    // Component remove queue
-    private ArrayList<GUIComponent> componentsRemove;
-    
+
+    // ### SCENES ###
+
+    // All scenes by their nickname
+    private HashMap<String, GUIScene> scenes;
+    // Scene add queue
+    private HashMap<String, GUIScene> scenesAdd;
+    // Scene remove queue
+    private HashMap<String, GUIScene> scenesRemove;
+
+    // To identify currently active scene
+    private GUIScene currentScene;
+    private String currentSceneName;
+
     public void setup(Game game) {
         
         // ### ENGINE STUFF ###
@@ -40,9 +45,13 @@ public class GUIEngine {
         // ### COMPONENTS ###
         
         // Set up array lists
-        components = new ArrayList<>();
-        componentsAdd = new ArrayList<>();
-        componentsRemove = new ArrayList<>();
+        scenes = new HashMap<>();
+        scenesAdd = new HashMap<>();
+        scenesRemove = new HashMap<>();
+
+        // Default scene is null
+        currentScene = null;
+        currentSceneName = null;
         
         // ### RENDERING ###
         
@@ -68,36 +77,26 @@ public class GUIEngine {
     
     // Add and remove all components in queue
     public void flush() {
-        components.addAll(componentsAdd);
-        components.removeAll(componentsRemove);
+        scenes.putAll(scenesAdd);
+        scenes.remove(componentsRemove);
         
         componentsAdd.clear();
         componentsRemove.clear();
     }
     
-    // Add an object
-    public void add(GUIComponent component) {
-        componentsAdd.add(component);
+    // Add a scene
+    public void add(GUIScene scene, String name) {
+        scenesAdd.put(name, scene);
     }
     
-    // Remove an object
-    public void remove(GUIComponent component) {
-        componentsRemove.add(component);
+    // Remove a scene
+    public void remove(GUIScene scene, String name) {
+        scenesRemove.put(name, scene);
     }
     
-    // Add objects
-    public void add(ArrayList<GUIComponent> components) {
-        componentsAdd.addAll(components);
-    }
-    
-    // Remove objects
-    public void remove(ArrayList<GUIComponent> components) {
-        componentsRemove.addAll(components);
-    }
-    
-    // Get all components
-    public ArrayList<GUIComponent> getComponents() {
-        return components;
+    // Get all scenes
+    public HashMap<String, GUIComponent> getScenes() {
+        return scenes;
     }
     
     // Render all visible objects
