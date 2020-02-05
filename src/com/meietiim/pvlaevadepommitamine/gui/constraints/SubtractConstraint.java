@@ -9,10 +9,16 @@ public class SubtractConstraint extends Constraint {
 
     @Override
     public float calculate() {
+        boolean initialized = false;
         float value = 0;
 
         for(Constraint constraint : sourceConstraints) {
-            value -= constraint.calculate();
+            if(!initialized) {
+                value = constraint.calculate();
+                initialized = true;
+            } else {
+                value -= constraint.calculate();
+            }
         }
 
         return value;

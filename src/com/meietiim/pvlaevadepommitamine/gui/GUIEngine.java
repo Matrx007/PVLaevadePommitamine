@@ -27,10 +27,6 @@ public class GUIEngine {
 
     // All scenes by their nickname
     private HashMap<String, GUIScene> scenes;
-    // Scene add queue
-    private HashMap<String, GUIScene> scenesAdd;
-    // Scene remove queue
-    private HashMap<String, GUIScene> scenesRemove;
 
     // To identify currently active scene
     private GUIScene currentScene;
@@ -46,8 +42,6 @@ public class GUIEngine {
         
         // Set up array lists
         scenes = new HashMap<>();
-        scenesAdd = new HashMap<>();
-        scenesRemove = new HashMap<>();
 
         // Default scene is null
         currentScene = null;
@@ -61,61 +55,57 @@ public class GUIEngine {
                 FrontEnd.RENDERER);
     }
     
-    // Make all objects visible
-    public void show() {
-        for(GUIComponent component : components) {
-            component.visible = true;
-        }
-    }
-    
-    // Make all objects invisible
-    public void hide() {
-        for(GUIComponent component : components) {
-            component.visible = false;
-        }
-    }
-    
-    // Add and remove all components in queue
-    public void flush() {
-        scenes.putAll(scenesAdd);
-        scenes.remove(componentsRemove);
+    // Activate a scene
+    public void show(String scene) {
+        // Find the scene
+        GUIScene foundScene = scenes.get(scene);
         
-        componentsAdd.clear();
-        componentsRemove.clear();
+        // If the scene exists, active it
+        if(foundScene != null) {
+            currentScene = foundScene;
+            currentSceneName = scene;
+        }
+    }
+    
+    // Deactivate current scene
+    public void hide() {
+        currentScene = null;
+        currentSceneName = null;
     }
     
     // Add a scene
     public void add(GUIScene scene, String name) {
-        scenesAdd.put(name, scene);
+        scenes.put(name, scene);
     }
     
     // Remove a scene
-    public void remove(GUIScene scene, String name) {
-        scenesRemove.put(name, scene);
+    public void remove(String name) {
+        scenes.remove(name);
     }
     
-    // Get all scenes
-    public HashMap<String, GUIComponent> getScenes() {
+    // Return all scenes
+    public HashMap<String, GUIScene> getScenes() {
         return scenes;
     }
     
-    // Render all visible objects
+    // Render current scene
     public void render() {
         // Initialize the surface
         drawingSurface.beginDraw();
         drawingSurface.clear();
         
-        // Render all visible components
-        for(GUIComponent component : components) {
-            if(component.visible) {
-                component.render();
-            }
+        // Render only if a scene is active
+        if(currentScene != null) {
+            
+            // Render the scene
+            currentScene.render();
         }
         
         // Flush surface
         drawingSurface.endDraw();
     }
     
+    // Update current scene
     public void update() {
         // Resize drawingSurface if necessary
         if(previousWidth != width ||
@@ -131,9 +121,10 @@ public class GUIEngine {
                     width, height, FrontEnd.RENDERER);
         }
     
-        // Update all the components
-        for(GUIComponent component : components) {
-            component.update();
+        // Only update elements if a scene is active
+        if(currentScene != null) {
+            // Update the current scene
+            currentScene.update();
         }
     }
 }

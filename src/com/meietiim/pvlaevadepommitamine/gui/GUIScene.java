@@ -17,7 +17,7 @@ public class GUIScene {
         componentsRemove = new ArrayList<>();
     }
 
-    // Render all visible components in the scene
+    // Render all the visible components
     public void render() {
         for(GUIComponent component : components) {
             if(component.visible) {
@@ -26,8 +26,10 @@ public class GUIScene {
         }
     }
 
-    // Update all components on screen
+    // Update all the components
     public void update() {
+        flush();
+        
         for(GUIComponent component : components) {
             component.update();
         }

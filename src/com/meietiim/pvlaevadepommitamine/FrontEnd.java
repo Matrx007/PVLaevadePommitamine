@@ -1,12 +1,19 @@
 package com.meietiim.pvlaevadepommitamine;
 
+import com.meietiim.pvlaevadepommitamine.gui.GUIComponent;
+import com.meietiim.pvlaevadepommitamine.gui.GUIEngine;
+import com.meietiim.pvlaevadepommitamine.gui.GUIScene;
+import com.meietiim.pvlaevadepommitamine.gui.components.Button;
+import com.meietiim.pvlaevadepommitamine.gui.constraints.ConstraintBuilder;
+import com.meietiim.pvlaevadepommitamine.gui.constraints.FixedConstraint;
+import com.meietiim.pvlaevadepommitamine.gui.constraints.LinkedConstraint;
+import com.meietiim.pvlaevadepommitamine.gui.constraints.SubtractConstraint;
 import com.ydgames.mxe.Game;
 import com.ydgames.mxe.GameContainer;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
-import java.util.Arrays;
 import java.util.SplittableRandom;
 
 /**
@@ -18,6 +25,9 @@ public class FrontEnd extends GameContainer {
     
     // ### ENGINE ###
     public Game game;
+    
+    // ### GUI ###
+    public GUIEngine guiEngine;
     
     // ### RENDERING ###
     public static final String RENDERER = PConstants.P2D;
@@ -32,7 +42,7 @@ public class FrontEnd extends GameContainer {
     // ### RESOURCES ###
     private ImageManager imageManager;
     
-    // ### GAME DATA ###
+    // ### GAME LOGIC ###
     private BackEnd backEnd;
     
     // Ships to be placed (by their length)
@@ -121,8 +131,37 @@ public class FrontEnd extends GameContainer {
     @Override
     public void setup() {
 
-        // ### GAME ###
+        // ### ENGINE ###
         game = getGame();
+        
+        game.getSurface().setResizable(true);
+        
+        // ### GUI ###
+        guiEngine = new GUIEngine();
+        guiEngine.setup(game);
+        
+        // Test scenes
+        GUIScene testScene = new GUIScene();
+    
+        // Test objects
+        GUIComponent testButton = new Button(
+                new ConstraintBuilder(0).add(() -> game.pixelWidth).sub(8+256).get(),
+                new ConstraintBuilder(0).add(() -> game.pixelHeight).sub(8+64).get(),
+                new FixedConstraint(256),
+                new FixedConstraint(64),
+                () -> System.out.println("Hello world!"),
+                "YEs",
+                guiEngine
+        );
+        
+        // Add objects onto the screen
+        testScene.add(testButton);
+        
+        // Add scenes to the GUI engine
+        guiEngine.add(testScene, "test");
+        
+        // Make a scene active
+        guiEngine.show("test");
 
         // ### GAME LOGIC ¤¤¤
         backEnd = new BackEnd();
@@ -147,14 +186,36 @@ public class FrontEnd extends GameContainer {
 
         // ### RESOURCES ###
         imageManager = new ImageManager(game);
-
+    
+        // Load images & icons
+        imageManager.addToQueue("attacked_EmptySquare", "/res/attacked_EmptySquare.png");
+        imageManager.addToQueue("attacked_HitSquare", "/res/attacked_HitSquare.png");
+        
+        // Load ship sprite sheet
         PImage shipImageSheet = imageManager.loadImmediately(
                 "ships", "/res/ships.png");
-
-        imageManager.loadImmediately(
-                "attackedSquare", "/res/attackedSquare.png");
-        imageManager.loadImmediately(
-                "attackedSquareInverse", "/res/attackedSquareInverse.png");
+        
+        // Extract individual sprites from sprite sheet
+        imageManager.addImage("ship2",
+                shipImageSheet.get(64, 61, 48, 109));
+        imageManager.addImage("ship2sunk",
+                
+                shipImageSheet.get(176, 61, 48, 109));
+        
+        imageManager.addImage("ship3",
+                shipImageSheet.get(54, 224, 68, 176));
+        imageManager.addImage("ship3sunk",
+                shipImageSheet.get(166, 224, 68, 176));
+        
+        imageManager.addImage("ship4",
+                shipImageSheet.get(64, 448, 48, 232));
+        imageManager.addImage("ship4sunk",
+                shipImageSheet.get(176, 448, 48, 232));
+        
+        imageManager.addImage("ship5",
+                shipImageSheet.get(275, 51, 74, 298));
+        imageManager.addImage("ship5sunk",
+                shipImageSheet.get(338, 51, 74, 298));
     }
     
     @Override
@@ -188,8 +249,6 @@ public class FrontEnd extends GameContainer {
         action = ACTION_UNKNOWN;
         error = ERROR_NONE;
         response = RESPONSE_EMPTY;
-    
-        System.out.println(gameState);
         
         switch (gameState) {
             case STATE_PLAYER_PLACING_SHIPS:
@@ -290,7 +349,7 @@ public class FrontEnd extends GameContainer {
         
                         // Read the response
                         if (response == RESPONSE_HIT) {
-                            // If player hit a ship, give the player a new turn
+                            // If player hit a ship, give the player a new turn 
                             gameState = STATE_PLAYER_PLACING_BOMBS;
                         } else if (response == RESPONSE_EMPTY) {
                             // If no response, it's computer's turn
@@ -322,6 +381,9 @@ public class FrontEnd extends GameContainer {
                 
                 break;
         }
+        
+        // ### GUI ###
+        guiEngine.update();
     }
     
     @Override
@@ -330,15 +392,25 @@ public class FrontEnd extends GameContainer {
         
         screenBuffer.beginDraw();
         
+        // Clear background
         screenBuffer.fill(66, 164, 245);
         screenBuffer.noStroke();
         screenBuffer.rect(0, 0, game.pixelWidth, game.pixelHeight);
         
+        // ### GAME ###
+        
         playerGrid.render();
         computerGrid.render();
+    
+        // ### GUI ###
+        guiEngine.render();
+    
+        screenBuffer.image(guiEngine.drawingSurface, 0, 0);
         
+        // Flush
         screenBuffer.endDraw();
         
+        // Draw screenBuffer onto the screen
         game.image(screenBuffer, 0, 0);
         
     }

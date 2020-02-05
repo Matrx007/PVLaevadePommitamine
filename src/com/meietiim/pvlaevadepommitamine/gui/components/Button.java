@@ -1,7 +1,9 @@
 package com.meietiim.pvlaevadepommitamine.gui.components;
 
+import com.meietiim.pvlaevadepommitamine.FrontEnd;
 import com.meietiim.pvlaevadepommitamine.gui.GUIComponent;
 import com.meietiim.pvlaevadepommitamine.gui.GUIEngine;
+import com.meietiim.pvlaevadepommitamine.gui.constraints.Constraint;
 import processing.core.PConstants;
 
 public class Button extends GUIComponent {
@@ -19,7 +21,7 @@ public class Button extends GUIComponent {
     // Executed when left clicked on the button
     private Action onClick;
     
-    public Button(float x, float y, int width, int height,
+    public Button(Constraint x, Constraint y, Constraint width, Constraint height,
                   Action onClick, String buttonText, GUIEngine engine) {
         super(x, y, width, height, engine);
     
@@ -31,7 +33,8 @@ public class Button extends GUIComponent {
     }
     
     @Override
-    public void update() {
+    public void tick() {
+//        System.out.println("Bounds: "+x+","+y+","+width+","+height);
         
         // If mouse hovering
         if(engine.game.mouseX >= x &&
@@ -53,23 +56,24 @@ public class Button extends GUIComponent {
     
     @Override
     public void render() {
+        
         // ### Button's body ###
         
         // Body has no outline and is black or dark grey when hovered
-        engine.drawingSurface.noStroke();
-        engine.drawingSurface.fill(color*64f, color*64f, color*64f);
+        FrontEnd.MAIN.game.noStroke();
+        FrontEnd.MAIN.game.fill(color*64f, color*64f, color*64f, 255);
     
         // Draw button's body
-        engine.drawingSurface.rect(x, y, width, height);
+        FrontEnd.MAIN.game.rect(x, y, width, height);
     
         // ### Button's text ###
         
         // Text is centered, has no outline and is white
-        engine.drawingSurface.textAlign(PConstants.CENTER, PConstants.CENTER);
-        engine.drawingSurface.noStroke();
-        engine.drawingSurface.fill(255);
+        FrontEnd.MAIN.game.textAlign(PConstants.CENTER, PConstants.CENTER);
+        FrontEnd.MAIN.game.noStroke();
+        FrontEnd.MAIN.game.fill(255);
         
         // Draw button's text
-        engine.drawingSurface.text(buttonText, x+width/2f, y+height/2f);
+        FrontEnd.MAIN.game.text(buttonText, x+width/2f, y+height/2f);
     }
 }
